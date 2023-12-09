@@ -7,4 +7,16 @@ type signUpRequestBody = {
 
 type signUpResponseBody = { message: string };
 
-export { signUpRequestBody, signUpResponseBody };
+type signInRequestBody = {
+  username: string;
+  password: string;
+};
+
+type signInResponseBody = { message: string; jwtToken?: string };
+
+export {
+  signUpRequestBody,
+  signUpResponseBody,
+  signInRequestBody,
+  signInResponseBody,
+};
