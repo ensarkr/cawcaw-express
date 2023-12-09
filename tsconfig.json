@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "target": "ESNext",
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "strict": true,
+    "outDir": "./api",
+    "esModuleInterop": true
+  },
+  "include": ["./src"],
+  "exclude": ["./src/**/*.test.ts"]
+}
