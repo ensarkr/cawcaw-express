@@ -8,6 +8,10 @@ app.get("/api/test", (req, res) => {
   res.json({ test: "success" }).status(200).end();
 });
 
+app.get("/api/test", (req, res) => {
+  res.json({ test: "success" }).status(200).end();
+});
+
 app.listen(port, () => {
   console.log("cawcaw-express listening on " + port);
 });
