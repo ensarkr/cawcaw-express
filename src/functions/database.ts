@@ -115,4 +115,47 @@ async function updatePassword(
   }
 }
 
-export { createUser, fetchUser, updateUser, updatePassword };
+async function followUser(
+  userId: number,
+  targetId: number
+): Promise<doubleReturn<undefined>> {
+  try {
+    await sql`INSERT INTO cawcaw_follow_relation (user_id,follows_id) 
+    VALUES (${userId},${targetId})`;
+
+    return { status: true };
+  } catch (e) {
+    return {
+      status: false,
+      message: (e as Error).message.includes("duplicate")
+        ? "Already following."
+        : "Database error occurred.",
+    };
+  }
+}
+
+async function unfollowUser(
+  userId: number,
+  targetId: number
+): Promise<doubleReturn<undefined>> {
+  try {
+    await sql`DELETE FROM cawcaw_follow_relation WHERE user_id = ${userId} AND follows_id = ${targetId}`;
+
+    return { status: true };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: false,
+      message: "Database error occurred.",
+    };
+  }
+}
+
+export {
+  createUser,
+  fetchUser,
+  updateUser,
+  updatePassword,
+  followUser,
+  unfollowUser,
+};

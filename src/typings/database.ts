@@ -4,6 +4,8 @@ type user_DB = {
   display_name: string;
   hashed_password: string;
   description: string;
+  followers_count: number;
+  following_count: number;
 };
 
 type user = {
@@ -13,6 +15,15 @@ type user = {
   description: string;
 };
 
-type userPartial = Omit<user, "description">;
+type userPartial = Omit<
+  user,
+  "description" | "followers_count" | "following_count"
+>;
 
-export { user_DB, user, userPartial };
+type followRelation = {
+  id: number;
+  user_id: number;
+  follows_id: number;
+};
+
+export { user_DB, user, userPartial, followRelation };

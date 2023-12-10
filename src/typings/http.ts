@@ -42,6 +42,18 @@ type editPasswordResponseBody = doubleReturn<undefined> & action;
 
 type jwtBadResponse = doubleReturn<undefined> & action;
 
+type followUserRequestBody = {
+  targetId: number;
+};
+
+type followUserResponseBody = doubleReturn<undefined> & action;
+
+type unfollowUserRequestBody = {
+  targetId: number;
+};
+
+type unfollowUserResponseBody = doubleReturn<undefined> & action;
+
 export {
   signUpRequestBody,
   signUpResponseBody,
@@ -52,4 +64,8 @@ export {
   editPasswordRequestBody,
   editPasswordResponseBody,
   jwtBadResponse,
+  followUserRequestBody,
+  followUserResponseBody,
+  unfollowUserRequestBody,
+  unfollowUserResponseBody,
 };
