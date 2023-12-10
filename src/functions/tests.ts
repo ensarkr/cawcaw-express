@@ -26,4 +26,15 @@ async function deleteTestUser(condition?: string) {
   }
 }
 
-export { insertTestUser, deleteTestUser, testUserData };
+async function getTestUser(useUsername?: boolean): Promise<user_DB> {
+  if (useUsername === undefined || useUsername === false) {
+    return (await sql`SELECT * FROM cawcaw_users WHERE id = 0`)
+      .rows[0] as user_DB;
+  } else {
+    return (
+      await sql`SELECT * FROM cawcaw_users WHERE username ${testUserData.username}`
+    ).rows[0] as user_DB;
+  }
+}
+
+export { insertTestUser, deleteTestUser, testUserData, getTestUser };

@@ -10,8 +10,8 @@ import {
 const mainUrl = "http://localhost:5000/api" + "/auth/signIn";
 
 const requestBody: signInRequestBody = {
-  username: "testUser",
-  password: "strongPassword",
+  username: testUserData.username,
+  password: testUserData.password,
 };
 
 const requestOptions: RequestInit = {
