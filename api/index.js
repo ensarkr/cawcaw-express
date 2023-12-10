@@ -1,7 +1,7 @@
 import express from "express";
 import "dotenv/config";
-import { auth } from "./auth/auth.js";
-import { profile } from "./profile/profile.js";
+import { auth } from "../build/auth/auth.js";
+import { profile } from "../build/profile/profile.js";
 const app = express();
 const port = 5000;
 app.use(auth);

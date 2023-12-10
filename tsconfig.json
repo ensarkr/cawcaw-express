@@ -5,7 +5,7 @@
     "moduleResolution": "NodeNext",
     "module": "NodeNext",
     "strict": true,
-    "outDir": "./api",
+    "outDir": "./build",
     "esModuleInterop": true
   },
   "include": ["./src"],
