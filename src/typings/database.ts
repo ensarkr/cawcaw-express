@@ -3,12 +3,16 @@ type user_DB = {
   username: string;
   display_name: string;
   hashed_password: string;
+  description: string;
 };
 
 type user = {
   id: number;
   username: string;
   displayName: string;
+  description: string;
 };
 
-export { user_DB, user };
+type userPartial = Omit<user, "description">;
+
+export { user_DB, user, userPartial };

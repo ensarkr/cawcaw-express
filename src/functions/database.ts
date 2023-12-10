@@ -10,8 +10,11 @@ async function createUser(
   password: string
 ): Promise<doubleReturn<undefined>> {
   try {
-    await sql`INSERT INTO cawcaw_users (display_name, username, hashed_password) 
-    VALUES (${displayName},${username}, ${await bcrypt.hash(password, 10)})`;
+    await sql`INSERT INTO cawcaw_users (display_name, username, hashed_password,description) 
+    VALUES (${displayName},${username}, ${await bcrypt.hash(
+      password,
+      10
+    )},${""})`;
 
     return { status: true };
   } catch (e) {
@@ -54,6 +57,7 @@ function convertDatabaseUserToNormal(user: user_DB): user {
     id: user.id,
     displayName: user.display_name,
     username: user.username,
+    description: user.description,
   };
 }
 
@@ -64,7 +68,7 @@ async function updateUser(
   description: string
 ): Promise<doubleReturn<undefined>> {
   try {
-    const dbResponse = await sql`UPDATE cawcaw_users
+    await sql`UPDATE cawcaw_users
       SET username = ${username}, display_name = ${displayName}, description = ${description}
       WHERE id = ${userId}`;
 
@@ -80,31 +84,35 @@ async function updateUser(
   }
 }
 
-// async function updatePassword(
-//   userId: number,
-//   oldPassword: string,
-//   newPassword: string
-// ): Promise<doubleReturn<true>> {
-//   try {
-//     const dbResponseOldPassword =
-//       await sql`SELECT hashed_password FROM cawcaw_users
-//       WHERE id = ${userId}`;
+async function updatePassword(
+  userId: number,
+  oldPassword: string,
+  newPassword: string
+): Promise<doubleReturn<undefined>> {
+  try {
+    const dbResponseResponse =
+      await sql`SELECT hashed_password FROM cawcaw_users
+      WHERE id = ${userId}`;
 
-//     if (dbResponseOldPassword)
-//       const dbResponseNewPassword = await sql`UPDATE cawcaw_users
-//       SET username = ${username}, display_name = ${displayName}, description = ${description}
-//       WHERE id = ${userId}`;
+    if (
+      !(await bcrypt.compare(
+        oldPassword,
+        dbResponseResponse.rows[0].hashed_password
+      ))
+    )
+      return { status: false, message: "Wrong password." };
 
-//     return { status: true, value: true };
-//   } catch (e) {
-//     console.log(e);
-//     return {
-//       status: false,
-//       message: (e as Error).message.includes("duplicate key")
-//         ? "This username cannot be used."
-//         : "Database error occurred.",
-//     };
-//   }
-// }
+    await sql`UPDATE cawcaw_users
+      SET hashed_password = ${await bcrypt.hash(newPassword, 10)}
+      WHERE id = ${userId}`;
 
-export { createUser, fetchUser, updateUser };
+    return { status: true };
+  } catch (e) {
+    return {
+      status: false,
+      message: "Database error occurred.",
+    };
+  }
+}
+
+export { createUser, fetchUser, updateUser, updatePassword };

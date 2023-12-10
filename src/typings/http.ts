@@ -40,7 +40,7 @@ type editPasswordRequestBody = {
 
 type editPasswordResponseBody = doubleReturn<undefined> & action;
 
-type jwtBadResponse = doubleReturn<never> & action;
+type jwtBadResponse = doubleReturn<undefined> & action;
 
 export {
   signUpRequestBody,
