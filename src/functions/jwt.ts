@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { user } from "../typings/database.js";
+import { user, userPartial } from "../typings/database.js";
 import crypto from "crypto";
 
-function createJWT(user: user) {
+function createJWT(user: userPartial) {
   // * 2 months
   const expirationTimeInMS = 60 * 60 * 24 * 60;
 
