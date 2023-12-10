@@ -1,11 +1,11 @@
 import "dotenv/config";
-import { signInRequestBody, signInResponseBody } from "../typings/http";
-import { decodeJWTPayload } from "../functions/jwt";
+import { signInRequestBody, signInResponseBody } from "../../typings/http";
+import { decodeJWTPayload } from "../../functions/jwt";
 import {
   deleteTestUser,
   insertTestUser,
   testUserData,
-} from "../functions/tests";
+} from "../../functions/tests";
 
 const mainUrl = "http://localhost:5000/api" + "/auth/signIn";
 

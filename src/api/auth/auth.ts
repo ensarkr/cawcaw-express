@@ -1,14 +1,14 @@
 import express, { json } from "express";
 import "dotenv/config";
-import { validateResponseBody } from "../functions/validation.js";
+import { validateResponseBody } from "../../functions/validation.js";
 import {
   signInRequestBody,
   signInResponseBody,
   signUpRequestBody,
   signUpResponseBody,
-} from "../typings/http.js";
-import { createUser, fetchUser } from "../functions/database.js";
-import { createJWT } from "../functions/jwt.js";
+} from "../../typings/http.js";
+import { createUser, fetchUser } from "../../functions/database.js";
+import { createJWT } from "../../functions/jwt.js";
 
 const auth = express();
 auth.use(express.json());

@@ -3,14 +3,14 @@ import {
   editProfileRequestBody,
   editProfileResponseBody,
   jwtBadResponse,
-} from "../typings/http";
-import { createJWT, decodeJWTPayload } from "../functions/jwt";
+} from "../../typings/http";
+import { createJWT, decodeJWTPayload } from "../../functions/jwt";
 import {
   deleteTestUser,
   getTestUser,
   insertTestUser,
   testUserData,
-} from "../functions/tests";
+} from "../../functions/tests";
 
 const mainUrl = "http://localhost:5000/api" + "/profile/edit";
 

@@ -1,8 +1,8 @@
 import express from "express";
 import "dotenv/config";
-import { validateResponseBody } from "../functions/validation.js";
-import { createUser, fetchUser } from "../functions/database.js";
-import { createJWT } from "../functions/jwt.js";
+import { validateResponseBody } from "../../functions/validation.js";
+import { createUser, fetchUser } from "../../functions/database.js";
+import { createJWT } from "../../functions/jwt.js";
 const auth = express();
 auth.use(express.json());
 auth.post("/api/auth/signUp", async (req, res) => {

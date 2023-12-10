@@ -3,14 +3,14 @@ import {
   editPasswordRequestBody,
   editPasswordResponseBody,
   jwtBadResponse,
-} from "../typings/http";
-import { createJWT } from "../functions/jwt";
+} from "../../typings/http";
+import { createJWT } from "../../functions/jwt";
 import {
   deleteTestUser,
   getTestUser,
   insertTestUser,
   testUserData,
-} from "../functions/tests";
+} from "../../functions/tests";
 import bcrypt from "bcrypt";
 
 const mainUrl = "http://localhost:5000/api" + "/profile/editPassword";

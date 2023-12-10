@@ -1,7 +1,6 @@
-import { sql } from "@vercel/postgres";
 import "dotenv/config";
-import { signUpRequestBody, signUpResponseBody } from "../typings/http";
-import { deleteTestUser, testUserData } from "../functions/tests";
+import { signUpRequestBody, signUpResponseBody } from "../../typings/http";
+import { deleteTestUser, testUserData } from "../../functions/tests";
 
 const mainUrl = "http://localhost:5000/api" + "/auth/signUp";
 

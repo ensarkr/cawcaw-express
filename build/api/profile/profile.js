@@ -1,9 +1,9 @@
 import express from "express";
 import "dotenv/config";
-import { validateResponseBody } from "../functions/validation.js";
-import { validateJWT_MW } from "../middlewares/jwt.js";
-import { updatePassword, updateUser } from "../functions/database.js";
-import { createJWT } from "../functions/jwt.js";
+import { validateResponseBody } from "../../functions/validation.js";
+import { validateJWT_MW } from "../../middlewares/jwt.js";
+import { updatePassword, updateUser } from "../../functions/database.js";
+import { createJWT } from "../../functions/jwt.js";
 const profile = express();
 profile.use(express.json());
 profile.post("/api/profile/edit", validateJWT_MW, async (req, res) => {
