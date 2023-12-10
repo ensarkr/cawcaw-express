@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest --runInBand --verbose",
     "build": "tsc",
-    "start": "npm run build && node api/app.js"
+    "start": "npm run build && node api/index.js"
   },
   "author": "https://github.com/ensarkr",
   "license": "ISC",
