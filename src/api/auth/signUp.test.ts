@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { signUpRequestBody, signUpResponseBody } from "../../typings/http";
-import { deleteTestUser, testUserData } from "../../functions/tests";
+import { deleteTestUser, testHost, testUserData } from "../../functions/tests";
 
-const mainUrl = "http://localhost:5000/api" + "/auth/signUp";
+const mainUrl = testHost + "/auth/signUp";
 
 describe("sign up", () => {
   const requestBody: signUpRequestBody = {

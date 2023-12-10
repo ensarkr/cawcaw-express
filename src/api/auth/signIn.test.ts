@@ -4,10 +4,11 @@ import { decodeJWTPayload } from "../../functions/jwt";
 import {
   deleteTestUser,
   insertTestUser,
+  testHost,
   testUserData,
 } from "../../functions/tests";
 
-const mainUrl = "http://localhost:5000/api" + "/auth/signIn";
+const mainUrl = testHost + "/auth/signIn";
 
 const requestBody: signInRequestBody = {
   username: testUserData.username,

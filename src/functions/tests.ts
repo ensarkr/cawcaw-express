@@ -2,6 +2,11 @@ import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
 import { followRelation, user_DB } from "../typings/database.js";
 
+const localHost = "http://localhost:5000/api";
+const vercelHost = "https://cawcaw-express-ensarkr.vercel.app/api";
+
+const testHost = vercelHost;
+
 const testUserData = {
   id: 0,
   displayName: "test user",
@@ -100,4 +105,5 @@ export {
   getAllFollowRelations,
   deleteAddedFollowRelation,
   addFollowRelation,
+  testHost,
 };

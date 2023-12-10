@@ -1,7 +1,8 @@
 import { sql } from "@vercel/postgres";
 import "dotenv/config";
+import { testHost } from "../functions/tests";
 
-const mainUrl = "http://localhost:5000/api";
+const mainUrl = testHost;
 
 describe("main", () => {
   test("express is working", async () => {

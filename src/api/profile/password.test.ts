@@ -9,11 +9,12 @@ import {
   deleteTestUser,
   getTestUser,
   insertTestUser,
+  testHost,
   testUserData,
 } from "../../functions/tests";
 import bcrypt from "bcrypt";
 
-const mainUrl = "http://localhost:5000/api" + "/profile/editPassword";
+const mainUrl = testHost + "/profile/editPassword";
 
 describe("edit password", () => {
   const requestBody: editPasswordRequestBody = {

@@ -10,9 +10,10 @@ import {
   getTestUser,
   insertTestUser,
   testUserData,
+  testHost,
 } from "../../functions/tests";
 
-const mainUrl = "http://localhost:5000/api" + "/profile/edit";
+const mainUrl = testHost + "/profile/edit";
 
 describe("edit profile", () => {
   const requestBody: editProfileRequestBody = {

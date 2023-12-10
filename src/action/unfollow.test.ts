@@ -17,9 +17,10 @@ import {
   getAllFollowRelations,
   addFollowRelation,
   deleteAddedFollowRelation,
+  testHost,
 } from "../functions/tests";
 
-const mainUrl = "http://localhost:5000/api" + "/action/unfollow";
+const mainUrl = testHost + "/action/unfollow";
 
 const requestBody: unfollowUserRequestBody = {
   targetId: testUserData2.id,
