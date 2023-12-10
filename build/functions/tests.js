@@ -1,5 +1,8 @@
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
+const localHost = "http://localhost:5000/api";
+const vercelHost = "https://cawcaw-express-ensarkr.vercel.app/api";
+const testHost = vercelHost;
 const testUserData = {
     id: 0,
     displayName: "test user",
@@ -73,4 +76,4 @@ async function addFollowRelation() {
     await sql `INSERT INTO cawcaw_follow_relation (user_id,follows_id) VALUES 
   (${testUserData.id} , ${testUserData2.id})`;
 }
-export { insertTestUser, deleteTestUser, getTestUser, insertTestUser2, deleteTestUser2, getTestUser2, testUserData, testUserData2, getAllFollowRelations, deleteAddedFollowRelation, addFollowRelation, };
+export { insertTestUser, deleteTestUser, getTestUser, insertTestUser2, deleteTestUser2, getTestUser2, testUserData, testUserData2, getAllFollowRelations, deleteAddedFollowRelation, addFollowRelation, testHost, };
