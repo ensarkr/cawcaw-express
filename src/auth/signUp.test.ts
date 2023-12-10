@@ -1,15 +1,16 @@
 import { sql } from "@vercel/postgres";
 import "dotenv/config";
 import { signUpRequestBody, signUpResponseBody } from "../typings/http";
+import { deleteTestUser, testUserData } from "../functions/tests";
 
 const mainUrl = "http://localhost:5000/api" + "/auth/signUp";
 
 describe("sign up", () => {
   const requestBody: signUpRequestBody = {
-    displayName: "test user",
-    username: "testUser",
-    password: "strongPassword",
-    rePassword: "strongPassword",
+    displayName: testUserData.displayName,
+    username: testUserData.username,
+    password: testUserData.password,
+    rePassword: testUserData.password,
   };
 
   const requestOptions: RequestInit = {
@@ -21,18 +22,27 @@ describe("sign up", () => {
   };
 
   beforeAll(async () => {
-    await sql`DELETE FROM cawcaw_users WHERE username = 'testUser' `;
+    await deleteTestUser();
   });
 
   afterAll(async () => {
-    await sql`DELETE FROM cawcaw_users WHERE username = 'testUser' `;
+    await deleteTestUser(`WHERE username = ${testUserData.username}`);
   });
 
   test("empty body", async () => {
     const response = await fetch(mainUrl, {
       method: "POST",
     });
+
     expect(response.status).toEqual(400);
+
+    const body: signUpResponseBody = await response.json();
+    const correctBody: signUpResponseBody = {
+      status: false,
+      message: "Empty inputs.",
+    };
+
+    expect(body).toEqual(correctBody);
   });
 
   test("different passwords", async () => {
@@ -44,8 +54,11 @@ describe("sign up", () => {
       } as signUpRequestBody),
     });
 
+    expect(response.status).toEqual(400);
+
     const data: signUpResponseBody = await response.json();
     const correctBody: signUpResponseBody = {
+      status: false,
       message: "Passwords do not match.",
     };
 
@@ -65,6 +78,7 @@ describe("sign up", () => {
 
     const body: signUpResponseBody = await response.json();
     const correctBody: signUpResponseBody = {
+      status: false,
       message: "This username cannot be used.",
     };
 

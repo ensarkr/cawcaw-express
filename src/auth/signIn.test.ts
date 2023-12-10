@@ -1,32 +1,34 @@
-import { sql } from "@vercel/postgres";
 import "dotenv/config";
 import { signInRequestBody, signInResponseBody } from "../typings/http";
-import bcrypt from "bcrypt";
 import { decodeJWTPayload } from "../functions/jwt";
+import {
+  deleteTestUser,
+  insertTestUser,
+  testUserData,
+} from "../functions/tests";
 
 const mainUrl = "http://localhost:5000/api" + "/auth/signIn";
 
+const requestBody: signInRequestBody = {
+  username: "testUser",
+  password: "strongPassword",
+};
+
+const requestOptions: RequestInit = {
+  method: "POST",
+  headers: { "Content-Type": "application/json; charset=utf-8" },
+  body: JSON.stringify({
+    ...requestBody,
+  }),
+};
+
 describe("sign in", () => {
-  const requestBody: signInRequestBody = {
-    username: "testUser",
-    password: "strongPassword",
-  };
-
-  const requestOptions: RequestInit = {
-    method: "POST",
-    headers: { "Content-Type": "application/json; charset=utf-8" },
-    body: JSON.stringify({
-      ...requestBody,
-    }),
-  };
-
   beforeAll(async () => {
-    await sql`INSERT INTO cawcaw_users (username,display_name,hashed_password) VALUES ('testUser', 'test user',
-     ${await bcrypt.hash(requestBody.password, 10)}) `;
+    await insertTestUser();
   });
 
   afterAll(async () => {
-    await sql`DELETE FROM cawcaw_users WHERE username = 'testUser' `;
+    await deleteTestUser();
   });
 
   test("empty body", async () => {
@@ -34,6 +36,14 @@ describe("sign in", () => {
       method: "POST",
     });
     expect(response.status).toEqual(400);
+
+    const body: signInResponseBody = await response.json();
+    const correctBody: signInResponseBody = {
+      status: false,
+      message: "Empty inputs.",
+    };
+
+    expect(body).toEqual(correctBody);
   });
 
   test("random username", async () => {
@@ -45,12 +55,15 @@ describe("sign in", () => {
       } as signInRequestBody),
     });
 
-    const data: signInResponseBody = await response.json();
+    expect(response.status).toEqual(400);
+
+    const body: signInResponseBody = await response.json();
     const correctBody: signInResponseBody = {
+      status: false,
       message: "Wrong username or password.",
     };
 
-    expect(data).toEqual(correctBody);
+    expect(body).toEqual(correctBody);
   });
 
   test("wrong password", async () => {
@@ -62,23 +75,30 @@ describe("sign in", () => {
       } as signInRequestBody),
     });
 
-    const data: signInResponseBody = await response.json();
+    expect(response.status).toEqual(400);
+
+    const body: signInResponseBody = await response.json();
     const correctBody: signInResponseBody = {
+      status: false,
       message: "Wrong username or password.",
     };
 
-    expect(data).toEqual(correctBody);
+    expect(body).toEqual(correctBody);
   });
 
   test("sign in has correct JWT", async () => {
     const response = await fetch(mainUrl, requestOptions);
-    const data: signInResponseBody = await response.json();
+    const body: signInResponseBody = await response.json();
 
     expect(response.status).toEqual(200);
-    expect(typeof data.jwtToken).toEqual("string");
-    const payload = decodeJWTPayload(data.jwtToken as string);
+
+    if (!body.status) return false;
+    expect(typeof body.value).toBe("string");
+
+    const payload = decodeJWTPayload(body.value);
+
     expect(payload.username).toEqual(requestBody.username);
-    expect(payload).toHaveProperty("displayName");
-    expect(payload).toHaveProperty("userId");
+    expect(payload.displayName).toEqual(testUserData.displayName);
+    expect(payload.userId).toEqual(testUserData.id);
   });
 });

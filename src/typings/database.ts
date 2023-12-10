@@ -1,13 +1,13 @@
 type user_DB = {
   id: number;
-  username: number;
+  username: string;
   display_name: string;
   hashed_password: string;
 };
 
 type user = {
   id: number;
-  username: number;
+  username: string;
   displayName: string;
 };
 

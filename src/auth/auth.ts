@@ -1,7 +1,12 @@
 import express, { json } from "express";
 import "dotenv/config";
 import { validateResponseBody } from "../functions/validation.js";
-import { signInRequestBody, signUpRequestBody } from "../typings/http.js";
+import {
+  signInRequestBody,
+  signInResponseBody,
+  signUpRequestBody,
+  signUpResponseBody,
+} from "../typings/http.js";
 import { createUser, fetchUser } from "../functions/database.js";
 import { createJWT } from "../functions/jwt.js";
 
@@ -19,12 +24,24 @@ auth.post("/api/auth/signUp", async (req, res) => {
       "rePassword",
     ])
   ) {
-    res.status(400).end();
+    res
+      .status(400)
+      .json({
+        status: false,
+        message: "Empty inputs.",
+      } as signUpResponseBody)
+      .end();
     return;
   }
 
   if (body.password !== body.rePassword) {
-    res.status(400).json({ message: "Passwords do not match." }).end();
+    res
+      .status(400)
+      .json({
+        status: false,
+        message: "Passwords do not match.",
+      } as signUpResponseBody)
+      .end();
     return;
   }
 
@@ -35,9 +52,20 @@ auth.post("/api/auth/signUp", async (req, res) => {
   );
 
   if (dbResponse.status) {
-    res.status(200).end();
+    res
+      .status(200)
+      .json({
+        status: true,
+      } as signUpResponseBody)
+      .end();
   } else {
-    res.status(400).json({ message: dbResponse.message }).end();
+    res
+      .status(400)
+      .json({
+        status: false,
+        message: dbResponse.message,
+      } as signUpResponseBody)
+      .end();
   }
   return;
 });
@@ -46,7 +74,13 @@ auth.post("/api/auth/signIn", async (req, res) => {
   const body: signInRequestBody = req.body;
 
   if (!validateResponseBody(body, ["username", "password"])) {
-    res.status(400).end();
+    res
+      .status(400)
+      .json({
+        status: false,
+        message: "Empty inputs.",
+      } as signInResponseBody)
+      .end();
     return;
   }
 
@@ -55,10 +89,19 @@ auth.post("/api/auth/signIn", async (req, res) => {
   if (dbResponse.status) {
     res
       .status(200)
-      .json({ message: "Success.", jwtToken: createJWT(dbResponse.value) })
+      .json({
+        status: true,
+        value: createJWT(dbResponse.value),
+      } as signInResponseBody)
       .end();
   } else {
-    res.status(400).json({ message: dbResponse.message }).end();
+    res
+      .status(400)
+      .json({
+        status: false,
+        message: dbResponse.message,
+      } as signInResponseBody)
+      .end();
   }
   return;
 });
