@@ -1,11 +1,11 @@
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
-import { followRelation, user_DB } from "../typings/database.js";
+import { followRelation_DB, post_DB, user_DB } from "../typings/database.js";
 
 const localHost = "http://localhost:5000/api";
 const vercelHost = "https://cawcaw-express-ensarkr.vercel.app/api";
 
-const testHost = vercelHost;
+const testHost = localHost;
 
 const testUserData = {
   id: 0,
@@ -13,6 +13,12 @@ const testUserData = {
   username: "testUser",
   password: "strongPassword",
   description: "description",
+};
+
+const testPostData = {
+  id: 0,
+  text: "post text",
+  image_url: "description",
 };
 
 const testUserData2 = {
@@ -78,9 +84,9 @@ async function getTestUser2(useUsername?: boolean): Promise<user_DB> {
   }
 }
 
-async function getAllFollowRelations(): Promise<followRelation[]> {
+async function getAllFollowRelations(): Promise<followRelation_DB[]> {
   return (await sql`SELECT * FROM cawcaw_follow_relation`)
-    .rows as followRelation[];
+    .rows as followRelation_DB[];
 }
 
 async function deleteAddedFollowRelation() {
@@ -91,6 +97,23 @@ async function deleteAddedFollowRelation() {
 async function addFollowRelation() {
   await sql`INSERT INTO cawcaw_follow_relation (user_id,follows_id) VALUES 
   (${testUserData.id} , ${testUserData2.id})`;
+}
+
+async function getPostsByTestUser(): Promise<post_DB[]> {
+  return (
+    await sql`SELECT * FROM cawcaw_posts WHERE user_id = ${testUserData.id}`
+  ).rows as post_DB[];
+}
+
+async function deleteAllPostsByTestUser(): Promise<post_DB[]> {
+  return (
+    await sql`DELETE FROM cawcaw_posts WHERE user_id = ${testUserData.id}`
+  ).rows as post_DB[];
+}
+
+async function insertPostByTestUser() {
+  await sql`INSERT INTO cawcaw_posts (id, user_id, text)
+    VALUES (${testPostData.id}, ${testUserData.id}, ${testPostData.text})`;
 }
 
 export {
@@ -106,4 +129,8 @@ export {
   deleteAddedFollowRelation,
   addFollowRelation,
   testHost,
+  getPostsByTestUser,
+  deleteAllPostsByTestUser,
+  insertPostByTestUser,
+  testPostData,
 };

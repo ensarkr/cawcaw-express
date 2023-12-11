@@ -2,13 +2,18 @@ import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
 const localHost = "http://localhost:5000/api";
 const vercelHost = "https://cawcaw-express-ensarkr.vercel.app/api";
-const testHost = vercelHost;
+const testHost = localHost;
 const testUserData = {
     id: 0,
     displayName: "test user",
     username: "testUser",
     password: "strongPassword",
     description: "description",
+};
+const testPostData = {
+    id: 0,
+    text: "post text",
+    image_url: "description",
 };
 const testUserData2 = {
     id: 1,
@@ -76,4 +81,14 @@ async function addFollowRelation() {
     await sql `INSERT INTO cawcaw_follow_relation (user_id,follows_id) VALUES 
   (${testUserData.id} , ${testUserData2.id})`;
 }
-export { insertTestUser, deleteTestUser, getTestUser, insertTestUser2, deleteTestUser2, getTestUser2, testUserData, testUserData2, getAllFollowRelations, deleteAddedFollowRelation, addFollowRelation, testHost, };
+async function getPostsByTestUser() {
+    return (await sql `SELECT * FROM cawcaw_posts WHERE user_id = ${testUserData.id}`).rows;
+}
+async function deleteAllPostsByTestUser() {
+    return (await sql `DELETE FROM cawcaw_posts WHERE user_id = ${testUserData.id}`).rows;
+}
+async function insertPostByTestUser() {
+    await sql `INSERT INTO cawcaw_posts (id, user_id, text)
+    VALUES (${testPostData.id}, ${testUserData.id}, ${testPostData.text})`;
+}
+export { insertTestUser, deleteTestUser, getTestUser, insertTestUser2, deleteTestUser2, getTestUser2, testUserData, testUserData2, getAllFollowRelations, deleteAddedFollowRelation, addFollowRelation, testHost, getPostsByTestUser, deleteAllPostsByTestUser, insertPostByTestUser, testPostData, };
