@@ -1,6 +1,11 @@
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
-import { followRelation_DB, post_DB, user_DB } from "../typings/database.js";
+import {
+  followRelation_DB,
+  postLikes_DB,
+  post_DB,
+  user_DB,
+} from "../typings/database.js";
 
 const localHost = "http://localhost:5000/api";
 const vercelHost = "https://cawcaw-express-ensarkr.vercel.app/api";
@@ -84,9 +89,10 @@ async function getTestUser2(useUsername?: boolean): Promise<user_DB> {
   }
 }
 
-async function getAllFollowRelations(): Promise<followRelation_DB[]> {
-  return (await sql`SELECT * FROM cawcaw_follow_relation`)
-    .rows as followRelation_DB[];
+async function getAllFollowRelationsByTestUser(): Promise<followRelation_DB[]> {
+  return (
+    await sql`SELECT * FROM cawcaw_follow_relation  WHERE user_id = ${testUserData.id}`
+  ).rows as followRelation_DB[];
 }
 
 async function deleteAddedFollowRelation() {
@@ -116,6 +122,12 @@ async function insertPostByTestUser() {
     VALUES (${testPostData.id}, ${testUserData.id}, ${testPostData.text})`;
 }
 
+async function getAllPostLikesByTestUser(): Promise<postLikes_DB[]> {
+  return (
+    await sql`SELECT * FROM cawcaw_post_likes  WHERE user_id = ${testUserData.id}`
+  ).rows as postLikes_DB[];
+}
+
 export {
   insertTestUser,
   deleteTestUser,
@@ -125,7 +137,7 @@ export {
   getTestUser2,
   testUserData,
   testUserData2,
-  getAllFollowRelations,
+  getAllFollowRelationsByTestUser,
   deleteAddedFollowRelation,
   addFollowRelation,
   testHost,
@@ -133,4 +145,5 @@ export {
   deleteAllPostsByTestUser,
   insertPostByTestUser,
   testPostData,
+  getAllPostLikesByTestUser,
 };
