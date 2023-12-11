@@ -39,6 +39,8 @@ function convertDatabaseUserToNormal(user) {
         displayName: user.display_name,
         username: user.username,
         description: user.description,
+        followersCount: user.followers_count,
+        followingCount: user.following_count,
     };
 }
 async function updateUser(userId, displayName, username, description) {
@@ -165,4 +167,18 @@ async function unlikePost(userId, postId) {
         };
     }
 }
-export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, };
+async function commentOnPost(userId, postId, comment) {
+    try {
+        await sql `INSERT INTO cawcaw_post_comments (user_id, post_id, comment)
+     VALUES (${userId}, ${postId}, ${comment});`;
+        return { status: true };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, commentOnPost, };

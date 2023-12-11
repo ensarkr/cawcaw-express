@@ -79,6 +79,13 @@ type unlikePostRequestBody = {
 
 type unlikePostResponseBody = doubleReturn<undefined> & action;
 
+type commentOnPostRequestBody = {
+  postId: number;
+  comment: string;
+};
+
+type commentOnPostResponseBody = doubleReturn<undefined> & action;
+
 export {
   signUpRequestBody,
   signUpResponseBody,
@@ -101,4 +108,6 @@ export {
   likePostResponseBody,
   unlikePostRequestBody,
   unlikePostResponseBody,
+  commentOnPostRequestBody,
+  commentOnPostResponseBody,
 };

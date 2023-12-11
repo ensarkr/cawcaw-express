@@ -13,12 +13,11 @@ type user = {
   username: string;
   displayName: string;
   description: string;
+  followersCount: number;
+  followingCount: number;
 };
 
-type userPartial = Omit<
-  user,
-  "description" | "followers_count" | "following_count"
->;
+type userPartial = Pick<user, "id" | "username" | "displayName">;
 
 type followRelation_DB = {
   id: number;
@@ -41,4 +40,19 @@ type postLikes_DB = {
   post_id: number;
 };
 
-export { user_DB, user, userPartial, followRelation_DB, post_DB, postLikes_DB };
+type postComments_DB = {
+  id: number;
+  user_id: number;
+  post_id: number;
+  comment: string;
+};
+
+export {
+  user_DB,
+  user,
+  userPartial,
+  followRelation_DB,
+  post_DB,
+  postLikes_DB,
+  postComments_DB,
+};
