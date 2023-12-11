@@ -67,6 +67,18 @@ type removePostRequestBody = {
 
 type removePostResponseBody = doubleReturn<undefined> & action;
 
+type likePostRequestBody = {
+  postId: number;
+};
+
+type likePostResponseBody = doubleReturn<undefined> & action;
+
+type unlikePostRequestBody = {
+  postId: number;
+};
+
+type unlikePostResponseBody = doubleReturn<undefined> & action;
+
 export {
   signUpRequestBody,
   signUpResponseBody,
@@ -85,4 +97,8 @@ export {
   createPostResponseBody,
   removePostRequestBody,
   removePostResponseBody,
+  likePostRequestBody,
+  likePostResponseBody,
+  unlikePostRequestBody,
+  unlikePostResponseBody,
 };

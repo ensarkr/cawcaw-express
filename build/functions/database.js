@@ -136,4 +136,33 @@ async function removePost(userId, postId) {
         };
     }
 }
-export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, };
+async function likePost(userId, postId) {
+    try {
+        await sql `INSERT INTO cawcaw_post_likes (user_id,post_id) 
+    VALUES (${userId},${postId})`;
+        return { status: true };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: e.message.includes("duplicate")
+                ? "Already liked."
+                : "Database error occurred.",
+        };
+    }
+}
+async function unlikePost(userId, postId) {
+    try {
+        await sql `DELETE FROM cawcaw_post_likes WHERE user_id = ${userId} AND post_id = ${postId}`;
+        return { status: true };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, };

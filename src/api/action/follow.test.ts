@@ -1,10 +1,10 @@
 import "dotenv/config";
 import {
-  unfollowUserRequestBody,
-  unfollowUserResponseBody,
+  followUserRequestBody,
+  followUserResponseBody,
   jwtBadResponse,
-} from "../typings/http";
-import { createJWT } from "../functions/jwt";
+} from "../../typings/http";
+import { createJWT } from "../../functions/jwt";
 import {
   deleteTestUser,
   deleteTestUser2,
@@ -14,15 +14,14 @@ import {
   testUserData2,
   getTestUser2,
   getTestUser,
-  getAllFollowRelations,
-  addFollowRelation,
+  getAllFollowRelationsByTestUser,
   deleteAddedFollowRelation,
   testHost,
-} from "../functions/tests";
+} from "../../functions/tests";
 
-const mainUrl = testHost + "/action/unfollow";
+const mainUrl = testHost + "/action/follow";
 
-const requestBody: unfollowUserRequestBody = {
+const requestBody: followUserRequestBody = {
   targetId: testUserData2.id,
 };
 
@@ -41,11 +40,12 @@ const requestOptions: RequestInit = {
   }),
 };
 
-describe("unfollow user", () => {
+describe("follow user", () => {
+  // * first test user follows second one
+
   beforeAll(async () => {
     await insertTestUser();
     await insertTestUser2();
-    await addFollowRelation();
   });
 
   afterAll(async () => {
@@ -64,7 +64,7 @@ describe("unfollow user", () => {
 
     expect(response.status).toEqual(401);
 
-    const body: unfollowUserRequestBody = await response.json();
+    const body: followUserRequestBody = await response.json();
     const correctBody: jwtBadResponse = {
       status: false,
       message: "Token cannot be found.",
@@ -83,8 +83,8 @@ describe("unfollow user", () => {
     });
     expect(response.status).toEqual(401);
 
-    const body: unfollowUserRequestBody = await response.json();
-    const correctBody: unfollowUserResponseBody = {
+    const body: followUserRequestBody = await response.json();
+    const correctBody: followUserResponseBody = {
       status: false,
       message: "Tampered or expired token.",
       actions: ["deleteJWT"],
@@ -100,8 +100,8 @@ describe("unfollow user", () => {
     });
     expect(response.status).toEqual(400);
 
-    const body: unfollowUserResponseBody = await response.json();
-    const correctBody: unfollowUserResponseBody = {
+    const body: followUserResponseBody = await response.json();
+    const correctBody: followUserResponseBody = {
       status: false,
       message: "Empty inputs.",
     };
@@ -109,24 +109,34 @@ describe("unfollow user", () => {
     expect(body).toEqual(correctBody);
   });
 
-  test("unfollow second user", async () => {
+  test("follow second user", async () => {
     const response = await fetch(mainUrl, requestOptions);
 
     expect(response.status).toEqual(200);
 
-    const body: unfollowUserResponseBody = await response.json();
-    const correctBody: unfollowUserResponseBody = {
+    const body: followUserResponseBody = await response.json();
+    const correctBody: followUserResponseBody = {
       status: true,
     };
 
     expect(body).toEqual(correctBody);
 
-    expect(
-      (await getAllFollowRelations()).filter(
-        (e) => e.follows_id === 1 && e.user_id === 0
-      )
-    ).toHaveLength(0);
-    expect((await getTestUser()).following_count).toEqual(0);
-    expect((await getTestUser2()).followers_count).toEqual(0);
+    expect(await getAllFollowRelationsByTestUser()).toHaveLength(1);
+    expect((await getTestUser()).following_count).toEqual(1);
+    expect((await getTestUser2()).followers_count).toEqual(1);
+  });
+
+  test("follow second user again", async () => {
+    const response = await fetch(mainUrl, requestOptions);
+
+    expect(response.status).toEqual(400);
+
+    const body: followUserResponseBody = await response.json();
+    const correctBody: followUserResponseBody = {
+      status: false,
+      message: "Already following.",
+    };
+
+    expect(body).toEqual(correctBody);
   });
 });

@@ -35,4 +35,10 @@ type post_DB = {
   comments_count: number;
 };
 
-export { user_DB, user, userPartial, followRelation_DB, post_DB };
+type postLikes_DB = {
+  id: number;
+  user_id: number;
+  post_id: number;
+};
+
+export { user_DB, user, userPartial, followRelation_DB, post_DB, postLikes_DB };

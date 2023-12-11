@@ -1,8 +1,8 @@
 import express from "express";
 import "dotenv/config";
-import { validateResponseBody } from "../functions/validation.js";
-import { followUser, likePost, unfollowUser, unlikePost, } from "../functions/database.js";
-import { validateJWT_MW } from "../middlewares/jwt.js";
+import { validateResponseBody } from "../../functions/validation.js";
+import { followUser, likePost, unfollowUser, unlikePost, } from "../../functions/database.js";
+import { validateJWT_MW } from "../../middlewares/jwt.js";
 const action = express();
 action.use(express.json());
 action.post("/api/action/follow", validateJWT_MW, async (req, res) => {

@@ -195,6 +195,44 @@ async function removePost(
   }
 }
 
+async function likePost(
+  userId: number,
+  postId: number
+): Promise<doubleReturn<undefined>> {
+  try {
+    await sql`INSERT INTO cawcaw_post_likes (user_id,post_id) 
+    VALUES (${userId},${postId})`;
+
+    return { status: true };
+  } catch (e) {
+    console.log(e);
+
+    return {
+      status: false,
+      message: (e as Error).message.includes("duplicate")
+        ? "Already liked."
+        : "Database error occurred.",
+    };
+  }
+}
+
+async function unlikePost(
+  userId: number,
+  postId: number
+): Promise<doubleReturn<undefined>> {
+  try {
+    await sql`DELETE FROM cawcaw_post_likes WHERE user_id = ${userId} AND post_id = ${postId}`;
+
+    return { status: true };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: false,
+      message: "Database error occurred.",
+    };
+  }
+}
+
 export {
   createUser,
   fetchUser,
@@ -204,4 +242,6 @@ export {
   unfollowUser,
   createPost,
   removePost,
+  likePost,
+  unlikePost,
 };

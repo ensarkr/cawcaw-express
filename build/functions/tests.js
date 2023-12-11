@@ -69,9 +69,8 @@ async function getTestUser2(useUsername) {
         return (await sql `SELECT * FROM cawcaw_users WHERE username = ${testUserData2.username}`).rows[0];
     }
 }
-async function getAllFollowRelations() {
-    return (await sql `SELECT * FROM cawcaw_follow_relation`)
-        .rows;
+async function getAllFollowRelationsByTestUser() {
+    return (await sql `SELECT * FROM cawcaw_follow_relation  WHERE user_id = ${testUserData.id}`).rows;
 }
 async function deleteAddedFollowRelation() {
     await sql `DELETE FROM cawcaw_follow_relation
@@ -91,4 +90,7 @@ async function insertPostByTestUser() {
     await sql `INSERT INTO cawcaw_posts (id, user_id, text)
     VALUES (${testPostData.id}, ${testUserData.id}, ${testPostData.text})`;
 }
-export { insertTestUser, deleteTestUser, getTestUser, insertTestUser2, deleteTestUser2, getTestUser2, testUserData, testUserData2, getAllFollowRelations, deleteAddedFollowRelation, addFollowRelation, testHost, getPostsByTestUser, deleteAllPostsByTestUser, insertPostByTestUser, testPostData, };
+async function getAllPostLikesByTestUser() {
+    return (await sql `SELECT * FROM cawcaw_post_likes  WHERE user_id = ${testUserData.id}`).rows;
+}
+export { insertTestUser, deleteTestUser, getTestUser, insertTestUser2, deleteTestUser2, getTestUser2, testUserData, testUserData2, getAllFollowRelationsByTestUser, deleteAddedFollowRelation, addFollowRelation, testHost, getPostsByTestUser, deleteAllPostsByTestUser, insertPostByTestUser, testPostData, getAllPostLikesByTestUser, };

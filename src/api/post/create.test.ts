@@ -237,5 +237,5 @@ describe("create post", () => {
     expect(posts[1].text).toBe(requestBody.text);
     expect(posts[1].image_url !== null).toBe(true);
     console.log("image link", posts[1].image_url);
-  });
+  }, 10000);
 });
