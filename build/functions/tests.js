@@ -93,4 +93,7 @@ async function insertPostByTestUser() {
 async function getAllPostLikesByTestUser() {
     return (await sql `SELECT * FROM cawcaw_post_likes  WHERE user_id = ${testUserData.id}`).rows;
 }
-export { insertTestUser, deleteTestUser, getTestUser, insertTestUser2, deleteTestUser2, getTestUser2, testUserData, testUserData2, getAllFollowRelationsByTestUser, deleteAddedFollowRelation, addFollowRelation, testHost, getPostsByTestUser, deleteAllPostsByTestUser, insertPostByTestUser, testPostData, getAllPostLikesByTestUser, };
+async function getAllCommentsByTestUser() {
+    return (await sql `SELECT * FROM cawcaw_post_comments WHERE user_id = ${testUserData.id}`).rows;
+}
+export { insertTestUser, deleteTestUser, getTestUser, insertTestUser2, deleteTestUser2, getTestUser2, testUserData, testUserData2, getAllFollowRelationsByTestUser, deleteAddedFollowRelation, addFollowRelation, testHost, getPostsByTestUser, deleteAllPostsByTestUser, insertPostByTestUser, testPostData, getAllPostLikesByTestUser, getAllCommentsByTestUser, };

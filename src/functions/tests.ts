@@ -2,6 +2,7 @@ import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
 import {
   followRelation_DB,
+  postComments_DB,
   postLikes_DB,
   post_DB,
   user_DB,
@@ -128,6 +129,12 @@ async function getAllPostLikesByTestUser(): Promise<postLikes_DB[]> {
   ).rows as postLikes_DB[];
 }
 
+async function getAllCommentsByTestUser(): Promise<postComments_DB[]> {
+  return (
+    await sql`SELECT * FROM cawcaw_post_comments WHERE user_id = ${testUserData.id}`
+  ).rows as postComments_DB[];
+}
+
 export {
   insertTestUser,
   deleteTestUser,
@@ -146,4 +153,5 @@ export {
   insertPostByTestUser,
   testPostData,
   getAllPostLikesByTestUser,
+  getAllCommentsByTestUser,
 };
