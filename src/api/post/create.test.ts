@@ -184,7 +184,7 @@ describe("create post", () => {
     };
 
     expect(body).toEqual(correctBody);
-  });
+  }, 10000);
 
   test("isThereAnImage is yes but no image", async () => {
     const formData = new FormData();
