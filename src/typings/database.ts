@@ -20,10 +20,19 @@ type userPartial = Omit<
   "description" | "followers_count" | "following_count"
 >;
 
-type followRelation = {
+type followRelation_DB = {
   id: number;
   user_id: number;
   follows_id: number;
 };
 
-export { user_DB, user, userPartial, followRelation };
+type post_DB = {
+  id: number;
+  user_id: number;
+  text: string;
+  image_url: string | null;
+  likes_count: number;
+  comments_count: number;
+};
+
+export { user_DB, user, userPartial, followRelation_DB, post_DB };

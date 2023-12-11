@@ -54,6 +54,19 @@ type unfollowUserRequestBody = {
 
 type unfollowUserResponseBody = doubleReturn<undefined> & action;
 
+type createPostRequestBody = {
+  text: string;
+  isThereAnImage: "yes" | "no";
+};
+
+type createPostResponseBody = doubleReturn<undefined> & action;
+
+type removePostRequestBody = {
+  postId: number;
+};
+
+type removePostResponseBody = doubleReturn<undefined> & action;
+
 export {
   signUpRequestBody,
   signUpResponseBody,
@@ -68,4 +81,8 @@ export {
   followUserResponseBody,
   unfollowUserRequestBody,
   unfollowUserResponseBody,
+  createPostRequestBody,
+  createPostResponseBody,
+  removePostRequestBody,
+  removePostResponseBody,
 };

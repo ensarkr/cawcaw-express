@@ -104,4 +104,36 @@ async function unfollowUser(userId, targetId) {
         };
     }
 }
-export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, };
+async function createPost(userId, text, imageUrl) {
+    try {
+        await sql `INSERT INTO cawcaw_posts (user_id, text, image_url)
+     VALUES (${userId}, ${text}, ${imageUrl})`;
+        return { status: true };
+    }
+    catch (e) {
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+async function removePost(userId, postId) {
+    try {
+        const dbCheck = await sql `SELECT * FROM cawcaw_posts WHERE id = ${postId} AND user_id = ${userId}`;
+        if (dbCheck.rowCount === 0) {
+            return {
+                status: false,
+                message: "Post does not exist.",
+            };
+        }
+        await sql `DELETE FROM cawcaw_posts WHERE id = ${postId} AND user_id = ${userId}`;
+        return { status: true };
+    }
+    catch (e) {
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, };
