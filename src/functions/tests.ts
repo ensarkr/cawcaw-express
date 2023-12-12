@@ -123,6 +123,20 @@ async function insertPostByTestUser() {
     VALUES (${testPostData.id}, ${testUserData.id}, ${testPostData.text})`;
 }
 
+async function insertPostsByTestUser(postCount: number) {
+  for (let i = 0; i < postCount; i++) {
+    await sql`INSERT INTO cawcaw_posts ( user_id, text)
+    VALUES ( ${testUserData.id}, ${testPostData.text})`;
+  }
+}
+
+async function insertPostsByTestUser2(postCount: number) {
+  for (let i = 0; i < postCount; i++) {
+    await sql`INSERT INTO cawcaw_posts ( user_id, text)
+    VALUES ( ${testUserData2.id}, ${testPostData.text})`;
+  }
+}
+
 async function getAllPostLikesByTestUser(): Promise<postLikes_DB[]> {
   return (
     await sql`SELECT * FROM cawcaw_post_likes  WHERE user_id = ${testUserData.id}`
@@ -154,4 +168,6 @@ export {
   testPostData,
   getAllPostLikesByTestUser,
   getAllCommentsByTestUser,
+  insertPostsByTestUser,
+  insertPostsByTestUser2,
 };

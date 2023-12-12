@@ -90,10 +90,22 @@ async function insertPostByTestUser() {
     await sql `INSERT INTO cawcaw_posts (id, user_id, text)
     VALUES (${testPostData.id}, ${testUserData.id}, ${testPostData.text})`;
 }
+async function insertPostsByTestUser(postCount) {
+    for (let i = 0; i < postCount; i++) {
+        await sql `INSERT INTO cawcaw_posts ( user_id, text)
+    VALUES ( ${testUserData.id}, ${testPostData.text})`;
+    }
+}
+async function insertPostsByTestUser2(postCount) {
+    for (let i = 0; i < postCount; i++) {
+        await sql `INSERT INTO cawcaw_posts ( user_id, text)
+    VALUES ( ${testUserData2.id}, ${testPostData.text})`;
+    }
+}
 async function getAllPostLikesByTestUser() {
     return (await sql `SELECT * FROM cawcaw_post_likes  WHERE user_id = ${testUserData.id}`).rows;
 }
 async function getAllCommentsByTestUser() {
     return (await sql `SELECT * FROM cawcaw_post_comments WHERE user_id = ${testUserData.id}`).rows;
 }
-export { insertTestUser, deleteTestUser, getTestUser, insertTestUser2, deleteTestUser2, getTestUser2, testUserData, testUserData2, getAllFollowRelationsByTestUser, deleteAddedFollowRelation, addFollowRelation, testHost, getPostsByTestUser, deleteAllPostsByTestUser, insertPostByTestUser, testPostData, getAllPostLikesByTestUser, getAllCommentsByTestUser, };
+export { insertTestUser, deleteTestUser, getTestUser, insertTestUser2, deleteTestUser2, getTestUser2, testUserData, testUserData2, getAllFollowRelationsByTestUser, deleteAddedFollowRelation, addFollowRelation, testHost, getPostsByTestUser, deleteAllPostsByTestUser, insertPostByTestUser, testPostData, getAllPostLikesByTestUser, getAllCommentsByTestUser, insertPostsByTestUser, insertPostsByTestUser2, };
