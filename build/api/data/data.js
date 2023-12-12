@@ -2,28 +2,9 @@ import express from "express";
 import "dotenv/config";
 import { fetchPublicUser, fetchUserFollowers, fetchUserFollowings, fetchUserPosts, getFollowingPosts, getLatestPosts, searchPosts, searchUsers, } from "../../functions/database.js";
 import { validateJWT_MW } from "../../middlewares/jwt.js";
+import { checkQueries_MW } from "../../middlewares/checkQueries.js";
 const data = express();
-data.get("/api/data/posts/explore", async (req, res) => {
-    if (req.query.endDate === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "endDate query must be defined.",
-        })
-            .end();
-        return;
-    }
-    if (req.query.page === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "page query must be defined.",
-        })
-            .end();
-        return;
-    }
+data.get("/api/data/posts/explore", checkQueries_MW(["endDate", "page"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -49,27 +30,7 @@ data.get("/api/data/posts/explore", async (req, res) => {
     }
     return;
 });
-data.get("/api/data/posts/following", validateJWT_MW, async (req, res) => {
-    if (req.query.endDate === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "endDate query must be defined.",
-        })
-            .end();
-        return;
-    }
-    if (req.query.page === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "page query must be defined.",
-        })
-            .end();
-        return;
-    }
+data.get("/api/data/posts/following", validateJWT_MW, checkQueries_MW(["endDate", "page"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -95,37 +56,7 @@ data.get("/api/data/posts/following", validateJWT_MW, async (req, res) => {
     }
     return;
 });
-data.get("/api/data/posts/search", async (req, res) => {
-    if (req.query.endDate === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "endDate query must be defined.",
-        })
-            .end();
-        return;
-    }
-    if (req.query.page === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "page query must be defined.",
-        })
-            .end();
-        return;
-    }
-    if (req.query.searchQuery === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "searchQuery query must be defined.",
-        })
-            .end();
-        return;
-    }
+data.get("/api/data/posts/search", checkQueries_MW(["endDate", "page", "searchQuery"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -152,37 +83,7 @@ data.get("/api/data/posts/search", async (req, res) => {
     }
     return;
 });
-data.get("/api/data/users/search", async (req, res) => {
-    if (req.query.endDate === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "endDate query must be defined.",
-        })
-            .end();
-        return;
-    }
-    if (req.query.page === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "page query must be defined.",
-        })
-            .end();
-        return;
-    }
-    if (req.query.searchQuery === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "searchQuery query must be defined.",
-        })
-            .end();
-        return;
-    }
+data.get("/api/data/users/search", checkQueries_MW(["endDate", "page", "searchQuery"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -231,27 +132,7 @@ data.get("/api/data/user/:id", async (req, res) => {
     }
     return;
 });
-data.get("/api/data/user/:id/followers", async (req, res) => {
-    if (req.query.endDate === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "endDate query must be defined.",
-        })
-            .end();
-        return;
-    }
-    if (req.query.page === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "page query must be defined.",
-        })
-            .end();
-        return;
-    }
+data.get("/api/data/user/:id/followers", checkQueries_MW(["endDate", "page"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -277,27 +158,7 @@ data.get("/api/data/user/:id/followers", async (req, res) => {
     }
     return;
 });
-data.get("/api/data/user/:id/followings", async (req, res) => {
-    if (req.query.endDate === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "endDate query must be defined.",
-        })
-            .end();
-        return;
-    }
-    if (req.query.page === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "page query must be defined.",
-        })
-            .end();
-        return;
-    }
+data.get("/api/data/user/:id/followings", checkQueries_MW(["endDate", "page"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -323,27 +184,7 @@ data.get("/api/data/user/:id/followings", async (req, res) => {
     }
     return;
 });
-data.get("/api/data/user/:id/posts", async (req, res) => {
-    if (req.query.endDate === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "endDate query must be defined.",
-        })
-            .end();
-        return;
-    }
-    if (req.query.page === undefined) {
-        res
-            .status(400)
-            .json({
-            status: false,
-            message: "page query must be defined.",
-        })
-            .end();
-        return;
-    }
+data.get("/api/data/user/:id/posts", checkQueries_MW(["endDate", "page"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
