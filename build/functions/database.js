@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
+import { convertDatabasePostsToNormal, convertDatabaseUserToNormal, convertDateToDatabase, } from "./conversion.js";
 async function createUser(displayName, username, password) {
     try {
         await sql `INSERT INTO cawcaw_users (display_name, username, hashed_password,description) 
@@ -32,16 +33,6 @@ async function fetchUser(username, password) {
             message: "Database error occurred.",
         };
     }
-}
-function convertDatabaseUserToNormal(user) {
-    return {
-        id: user.id,
-        displayName: user.display_name,
-        username: user.username,
-        description: user.description,
-        followersCount: user.followers_count,
-        followingCount: user.following_count,
-    };
 }
 async function updateUser(userId, displayName, username, description) {
     try {
@@ -181,4 +172,66 @@ async function commentOnPost(userId, postId, comment) {
         };
     }
 }
-export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, commentOnPost, };
+const rowPerPage = 10;
+async function getLatestPosts(date, page) {
+    try {
+        let dbResponse = await sql `SELECT COUNT(*) as count FROM cawcaw_posts 
+      WHERE inserted_at < ${convertDateToDatabase(date)}`;
+        const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+        if (page > pageCount - 1) {
+            return { status: false, message: "Page does not exist." };
+        }
+        dbResponse = await sql `SELECT * FROM cawcaw_posts 
+      WHERE inserted_at < ${convertDateToDatabase(date)} 
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+        return {
+            status: true,
+            value: {
+                posts: convertDatabasePostsToNormal(dbResponse.rows),
+                pageCount,
+            },
+        };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+async function getFollowingPosts(userId, date, page) {
+    try {
+        let dbResponse = await sql `SELECT COUNT(*) as count FROM cawcaw_posts JOIN
+    (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId}) 
+    as following_table on cawcaw_posts.user_id = following_table.follows_id 
+    WHERE inserted_at < ${convertDateToDatabase(date)}`;
+        const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+        if (page > pageCount - 1) {
+            return { status: false, message: "Page does not exist." };
+        }
+        dbResponse =
+            await sql `SELECT cawcaw_posts.id,cawcaw_posts.user_id,cawcaw_posts.text,
+    cawcaw_posts.image_url,cawcaw_posts.likes_count,cawcaw_posts.comments_count 
+    as count FROM cawcaw_posts JOIN
+    (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId}) 
+    as following_table on cawcaw_posts.user_id = following_table.follows_id 
+    WHERE inserted_at < ${convertDateToDatabase(date)}
+    LIMIT ${10} OFFSET ${rowPerPage * page}`;
+        return {
+            status: true,
+            value: {
+                posts: convertDatabasePostsToNormal(dbResponse.rows),
+                pageCount,
+            },
+        };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, commentOnPost, getLatestPosts, getFollowingPosts, };

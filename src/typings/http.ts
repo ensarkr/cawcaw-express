@@ -1,4 +1,7 @@
+import { post } from "./database.js";
 import { doubleReturn } from "./global.js";
+
+// * POST
 
 type clientActions = "deleteJWT";
 
@@ -86,6 +89,19 @@ type commentOnPostRequestBody = {
 
 type commentOnPostResponseBody = doubleReturn<undefined> & action;
 
+// * GET
+
+type getPostsQuery = {
+  endDate: Date;
+  page: number;
+};
+
+type getPostsResponse = doubleReturn<{
+  posts: post[];
+  pageCount: number;
+}> &
+  action;
+
 export {
   signUpRequestBody,
   signUpResponseBody,
@@ -110,4 +126,6 @@ export {
   unlikePostResponseBody,
   commentOnPostRequestBody,
   commentOnPostResponseBody,
+  getPostsQuery,
+  getPostsResponse,
 };

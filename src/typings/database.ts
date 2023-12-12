@@ -47,6 +47,15 @@ type postComments_DB = {
   comment: string;
 };
 
+type post = {
+  id: number;
+  userId: number;
+  text: string;
+  imageUrl: string | null;
+  likesCount: number;
+  commentsCount: number;
+};
+
 export {
   user_DB,
   user,
@@ -55,4 +64,5 @@ export {
   post_DB,
   postLikes_DB,
   postComments_DB,
+  post,
 };
