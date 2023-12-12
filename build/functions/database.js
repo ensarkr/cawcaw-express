@@ -205,7 +205,7 @@ async function getFollowingPosts(userId, date, page) {
         let dbResponse = await sql `SELECT COUNT(*) as count FROM cawcaw_posts JOIN
     (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId}) 
     as following_table on cawcaw_posts.user_id = following_table.follows_id 
-    WHERE inserted_at < ${convertDateToDatabase(date)}`;
+    WHERE cawcaw_posts.inserted_at < ${convertDateToDatabase(date)}`;
         const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
         if (page > pageCount - 1) {
             return { status: false, message: "Page does not exist." };
@@ -216,7 +216,7 @@ async function getFollowingPosts(userId, date, page) {
     as count FROM cawcaw_posts JOIN
     (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId}) 
     as following_table on cawcaw_posts.user_id = following_table.follows_id 
-    WHERE inserted_at < ${convertDateToDatabase(date)}
+    WHERE cawcaw_posts.inserted_at < ${convertDateToDatabase(date)}
     LIMIT ${10} OFFSET ${rowPerPage * page}`;
         return {
             status: true,
