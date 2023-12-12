@@ -1,3 +1,5 @@
+type dbDate = string;
+
 type user_DB = {
   id: number;
   username: string;
@@ -6,6 +8,7 @@ type user_DB = {
   description: string;
   followers_count: number;
   following_count: number;
+  inserted_at: dbDate;
 };
 
 type user = {
@@ -23,6 +26,7 @@ type followRelation_DB = {
   id: number;
   user_id: number;
   follows_id: number;
+  inserted_at: dbDate;
 };
 
 type post_DB = {
@@ -32,6 +36,7 @@ type post_DB = {
   image_url: string | null;
   likes_count: number;
   comments_count: number;
+  inserted_at: dbDate;
 };
 
 type postLikes_DB = {
@@ -45,6 +50,7 @@ type postComments_DB = {
   user_id: number;
   post_id: number;
   comment: string;
+  inserted_at: dbDate;
 };
 
 type post = {
@@ -54,6 +60,7 @@ type post = {
   imageUrl: string | null;
   likesCount: number;
   commentsCount: number;
+  insertedAt: Date;
 };
 
 export {

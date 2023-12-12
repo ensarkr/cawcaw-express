@@ -27,19 +27,13 @@ function convertDatabasePostToNormal(post) {
         imageUrl: post.image_url,
         likesCount: post.likes_count,
         commentsCount: post.comments_count,
+        insertedAt: new Date(post.inserted_at),
     };
 }
 function convertDatabasePostsToNormal(posts) {
     const resultArray = [];
     for (let i = 0; i < posts.length; i++) {
-        resultArray.push({
-            id: posts[i].id,
-            userId: posts[i].user_id,
-            text: posts[i].text,
-            imageUrl: posts[i].image_url,
-            likesCount: posts[i].likes_count,
-            commentsCount: posts[i].comments_count,
-        });
+        resultArray.push(convertDatabasePostToNormal(posts[i]));
     }
     return resultArray;
 }

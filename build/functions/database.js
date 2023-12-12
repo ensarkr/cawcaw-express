@@ -292,4 +292,109 @@ async function searchUsers(searchQuery, date, page) {
         };
     }
 }
-export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, commentOnPost, getLatestPosts, getFollowingPosts, searchPosts, searchUsers, };
+async function fetchPublicUser(userId) {
+    try {
+        const dbResponse = await sql `SELECT * FROM cawcaw_users WHERE id = ${userId}`;
+        if (dbResponse.rowCount === 0)
+            return { status: false, message: "User not found." };
+        const user = dbResponse.rows[0];
+        return { status: true, value: convertDatabaseUserToNormal(user) };
+    }
+    catch (e) {
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+async function fetchUserFollowers(userId, date, page) {
+    try {
+        let dbResponse = await sql `SELECT COUNT(*) as count FROM cawcaw_users 
+    JOIN (SELECT * FROM cawcaw_follow_relation WHERE follows_id = ${userId}) as followers_table
+    ON cawcaw_users.id = followers_table.follows_id`;
+        const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+        if (page > pageCount - 1) {
+            return { status: false, message: "Page does not exist." };
+        }
+        dbResponse =
+            await sql `SELECT cawcaw_users.id, cawcaw_users.display_name, cawcaw_users.username FROM cawcaw_users 
+    JOIN (SELECT * FROM cawcaw_follow_relation WHERE follows_id = ${userId}) as followers_table
+    ON cawcaw_users.id = followers_table.follows_id
+      WHERE followers_table.inserted_at < ${convertDateToDatabase(date)}
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+        return {
+            status: true,
+            value: {
+                users: convertDatabaseUsersToPartial(dbResponse.rows),
+                pageCount,
+            },
+        };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+async function fetchUserFollowings(userId, date, page) {
+    try {
+        let dbResponse = await sql `SELECT COUNT(*) as count FROM cawcaw_users 
+    JOIN (SELECT * FROM cawcaw_follow_relation WHERE user_id = ${userId}) as followers_table
+    ON cawcaw_users.id = followers_table.follows_id`;
+        const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+        if (page > pageCount - 1) {
+            return { status: false, message: "Page does not exist." };
+        }
+        dbResponse =
+            await sql `SELECT cawcaw_users.id, cawcaw_users.display_name, cawcaw_users.username FROM cawcaw_users 
+    JOIN (SELECT * FROM cawcaw_follow_relation WHERE user_id = ${userId}) as followers_table
+    ON cawcaw_users.id = followers_table.follows_id
+      WHERE followers_table.inserted_at < ${convertDateToDatabase(date)}
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+        return {
+            status: true,
+            value: {
+                users: convertDatabaseUsersToPartial(dbResponse.rows),
+                pageCount,
+            },
+        };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+async function fetchUserPosts(userId, date, page) {
+    try {
+        let dbResponse = await sql `SELECT COUNT(*) as count FROM cawcaw_posts 
+      WHERE user_id = ${userId}  AND inserted_at < ${convertDateToDatabase(date)}`;
+        const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+        if (page > pageCount - 1) {
+            return { status: false, message: "Page does not exist." };
+        }
+        dbResponse = await sql `SELECT * FROM cawcaw_posts 
+      WHERE user_id = ${userId}  
+      AND  inserted_at < ${convertDateToDatabase(date)} 
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+        return {
+            status: true,
+            value: {
+                posts: convertDatabasePostsToNormal(dbResponse.rows),
+                pageCount,
+            },
+        };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, commentOnPost, getLatestPosts, getFollowingPosts, searchPosts, searchUsers, fetchPublicUser, fetchUserFollowers, fetchUserFollowings, fetchUserPosts, };
