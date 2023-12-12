@@ -7,6 +7,7 @@ import {
   testHost,
   testUserData,
 } from "../../functions/tests";
+import { checkEmptyBody_TEST } from "../../functions/globalTests";
 
 const mainUrl = testHost + "/auth/signIn";
 
@@ -32,20 +33,7 @@ describe("sign in", () => {
     await deleteTestUser();
   });
 
-  test("empty body", async () => {
-    const response = await fetch(mainUrl, {
-      method: "POST",
-    });
-    expect(response.status).toEqual(400);
-
-    const body: signInResponseBody = await response.json();
-    const correctBody: signInResponseBody = {
-      status: false,
-      message: "Empty inputs.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
+  checkEmptyBody_TEST(mainUrl, requestOptions);
 
   test("random username", async () => {
     const response = await fetch(mainUrl, {

@@ -15,6 +15,10 @@ import {
   getAllPostLikesByTestUser,
   insertPostByTestUser,
 } from "../../functions/tests";
+import {
+  checkEmptyBody_TEST,
+  checkJWT_TEST,
+} from "../../functions/globalTests";
 
 const mainUrl = testHost + "/action/unlike";
 
@@ -44,61 +48,9 @@ describe("unlike post", () => {
   afterAll(async () => {
     await deleteTestUser();
   });
-
-  test("no jwt", async () => {
-    const response = await fetch(mainUrl, {
-      ...requestOptions,
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-    });
-
-    expect(response.status).toEqual(401);
-
-    const body: unlikePostRequestBody = await response.json();
-    const correctBody: jwtBadResponse = {
-      status: false,
-      message: "Token cannot be found.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
-
-  test("tampered jwt", async () => {
-    const response = await fetch(mainUrl, {
-      ...requestOptions,
-      headers: {
-        ...requestOptions.headers,
-        authorization: "tampered-jwt",
-      },
-    });
-    expect(response.status).toEqual(401);
-
-    const body: unlikePostRequestBody = await response.json();
-    const correctBody: unlikePostResponseBody = {
-      status: false,
-      message: "Tampered or expired token.",
-      actions: ["deleteJWT"],
-    };
-
-    expect(body).toEqual(correctBody);
-  });
-
-  test("empty body", async () => {
-    const response = await fetch(mainUrl, {
-      ...requestOptions,
-      body: "",
-    });
-    expect(response.status).toEqual(400);
-
-    const body: unlikePostResponseBody = await response.json();
-    const correctBody: unlikePostResponseBody = {
-      status: false,
-      message: "Empty inputs.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
+  
+  checkJWT_TEST(mainUrl, requestOptions);
+  checkEmptyBody_TEST(mainUrl, requestOptions);
 
   test("unlike post", async () => {
     const response = await fetch(mainUrl, requestOptions);

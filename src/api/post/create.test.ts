@@ -13,6 +13,10 @@ import {
   testHost,
 } from "../../functions/tests";
 import fs from "fs";
+import {
+  checkJWT_TEST,
+  checkEmptyBody_TEST,
+} from "../../functions/globalTests";
 
 const mainUrl = testHost + "/post/create";
 
@@ -53,59 +57,8 @@ describe("create post", () => {
     await deleteTestUser();
   });
 
-  test("no jwt", async () => {
-    const response = await fetch(mainUrl, {
-      ...requestOptions,
-      headers: {},
-    });
-
-    expect(response.status).toEqual(401);
-
-    const body: createPostRequestBody = await response.json();
-    const correctBody: jwtBadResponse = {
-      status: false,
-      message: "Token cannot be found.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
-
-  test("tampered jwt", async () => {
-    const response = await fetch(mainUrl, {
-      ...requestOptions,
-      headers: {
-        ...requestOptions.headers,
-        authorization: "tampered-jwt",
-      },
-    });
-    expect(response.status).toEqual(401);
-
-    const body: createPostRequestBody = await response.json();
-    const correctBody: createPostResponseBody = {
-      status: false,
-      message: "Tampered or expired token.",
-      actions: ["deleteJWT"],
-    };
-
-    expect(body).toEqual(correctBody);
-  });
-
-  test("empty body", async () => {
-    const response = await fetch(mainUrl, {
-      ...requestOptions,
-      body: "",
-    });
-
-    expect(response.status).toEqual(400);
-
-    const body: createPostRequestBody = await response.json();
-    const correctBody: createPostResponseBody = {
-      status: false,
-      message: "Empty inputs.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
+  checkJWT_TEST(mainUrl, requestOptions);
+  checkEmptyBody_TEST(mainUrl, requestOptions);
 
   test("text size exceeds 250 characters", async () => {
     const formData = new FormData();

@@ -13,6 +13,10 @@ import {
   testUserData,
 } from "../../functions/tests";
 import bcrypt from "bcrypt";
+import {
+  checkJWT_TEST,
+  checkEmptyBody_TEST,
+} from "../../functions/globalTests";
 
 const mainUrl = testHost + "/profile/editPassword";
 
@@ -46,62 +50,9 @@ describe("edit password", () => {
     await deleteTestUser();
   });
 
-  test("no jwt", async () => {
-    const response = await fetch(mainUrl, {
-      ...requestOptions,
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-    });
-
-    expect(response.status).toEqual(401);
-
-    const body: editPasswordResponseBody = await response.json();
-    const correctBody: jwtBadResponse = {
-      status: false,
-      message: "Token cannot be found.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
-
-  test("tampered jwt", async () => {
-    const response = await fetch(mainUrl, {
-      ...requestOptions,
-      headers: {
-        ...requestOptions.headers,
-        authorization: "tampered-jwt",
-      },
-    });
-    expect(response.status).toEqual(401);
-
-    const body: editPasswordResponseBody = await response.json();
-    const correctBody: editPasswordResponseBody = {
-      status: false,
-      message: "Tampered or expired token.",
-      actions: ["deleteJWT"],
-    };
-
-    expect(body).toEqual(correctBody);
-  });
-
-  test("empty body", async () => {
-    const response = await fetch(mainUrl, {
-      ...requestOptions,
-      body: "",
-    });
-
-    expect(response.status).toEqual(400);
-
-    const body: editPasswordResponseBody = await response.json();
-    const correctBody: editPasswordResponseBody = {
-      status: false,
-      message: "Empty inputs.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
-
+  checkJWT_TEST(mainUrl, requestOptions);
+  checkEmptyBody_TEST(mainUrl, requestOptions);
+  
   test("wrong old password", async () => {
     const response = await fetch(mainUrl, {
       ...requestOptions,

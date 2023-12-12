@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { signUpRequestBody, signUpResponseBody } from "../../typings/http";
 import { deleteTestUser, testHost, testUserData } from "../../functions/tests";
+import { checkEmptyBody_TEST } from "../../functions/globalTests";
 
 const mainUrl = testHost + "/auth/signUp";
 
@@ -28,21 +29,7 @@ describe("sign up", () => {
     await deleteTestUser(`WHERE username = ${testUserData.username}`);
   });
 
-  test("empty body", async () => {
-    const response = await fetch(mainUrl, {
-      method: "POST",
-    });
-
-    expect(response.status).toEqual(400);
-
-    const body: signUpResponseBody = await response.json();
-    const correctBody: signUpResponseBody = {
-      status: false,
-      message: "Empty inputs.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
+  checkEmptyBody_TEST(mainUrl, requestOptions);
 
   test("different passwords", async () => {
     const response = await fetch(mainUrl, {

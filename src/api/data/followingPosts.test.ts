@@ -18,6 +18,7 @@ import {
   testUserData2,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
+import { checkJWT_TEST, checkQueries_TEST } from "../../functions/globalTests";
 
 const mainUrl = testHost + "/data/posts/following";
 
@@ -53,74 +54,17 @@ describe("get following users posts", () => {
     await deleteTestUser2();
   });
 
-  test("no jwt", async () => {
-    const response = await fetch(mainUrl, {
-      ...requestOptions,
-      headers: {},
-    });
-
-    expect(response.status).toEqual(401);
-
-    const body: getPostsResponse = await response.json();
-    const correctBody: jwtBadResponse = {
-      status: false,
-      message: "Token cannot be found.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
-
-  test("tampered jwt", async () => {
-    const response = await fetch(mainUrl, {
-      ...requestOptions,
-      headers: {
-        ...requestOptions.headers,
-        authorization: "tampered-jwt",
-      },
-    });
-    expect(response.status).toEqual(401);
-
-    const body: getPostsResponse = await response.json();
-    const correctBody: getPostsResponse = {
-      status: false,
-      message: "Tampered or expired token.",
-      actions: ["deleteJWT"],
-    };
-
-    expect(body).toEqual(correctBody);
-  });
-
-  test("no queries", async () => {
-    const response = await fetch(mainUrl, requestOptions);
-    expect(response.status).toEqual(400);
-
-    const body: getPostsResponse = await response.json();
-    const correctBody: getPostsResponse = {
-      status: false,
-      message: "endDate query must be defined.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
-
-  test("no page query", async () => {
-    const response = await fetch(
-      returnURLWithQueries(mainUrl, {
-        endDate: new Date(Date.now() + 99999999999),
-      }),
-      requestOptions
-    );
-
-    expect(response.status).toEqual(400);
-
-    const body: getPostsResponse = await response.json();
-    const correctBody: getPostsResponse = {
-      status: false,
-      message: "page query must be defined.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
+  checkJWT_TEST(mainUrl, requestOptions);
+  checkQueries_TEST(
+    mainUrl,
+    requestOptions,
+    {
+      page: true,
+      endDate: true,
+      searchQuery: false,
+    },
+    returnURLWithQueries
+  );
 
   test("route responses correct 1st page", async () => {
     const response = await fetch(requestUrl, requestOptions);

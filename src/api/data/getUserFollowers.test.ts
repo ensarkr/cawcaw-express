@@ -17,6 +17,7 @@ import {
   testUserData2,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
+import { checkQueries_TEST } from "../../functions/globalTests";
 
 const mainUrl = testHost + "/data/user/" + testUserData2.id + "/followers";
 
@@ -43,37 +44,16 @@ describe("get user followers ", () => {
     await deleteTestUser2();
   });
 
-  test("no queries", async () => {
-    const response = await fetch(mainUrl, requestOptions);
-    expect(response.status).toEqual(400);
-
-    const body: getUsersResponse = await response.json();
-    const correctBody: getUsersResponse = {
-      status: false,
-      message: "endDate query must be defined.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
-
-  test("no page query", async () => {
-    const response = await fetch(
-      returnURLWithQueries(mainUrl, {
-        endDate: new Date(Date.now() + 99999999999),
-      }),
-      requestOptions
-    );
-
-    expect(response.status).toEqual(400);
-
-    const body: getUsersResponse = await response.json();
-    const correctBody: getUsersResponse = {
-      status: false,
-      message: "page query must be defined.",
-    };
-
-    expect(body).toEqual(correctBody);
-  });
+  checkQueries_TEST(
+    mainUrl,
+    requestOptions,
+    {
+      page: true,
+      endDate: true,
+      searchQuery: false,
+    },
+    returnURLWithQueries
+  );
 
   test("route responds correct 1st page", async () => {
     const response = await fetch(requestUrl, requestOptions);

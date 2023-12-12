@@ -1,6 +1,7 @@
 import { sql } from "@vercel/postgres";
 import "dotenv/config";
 import { testHost } from "../functions/tests";
+import { jwtBadResponse } from "../typings/http";
 
 const mainUrl = testHost;
 
