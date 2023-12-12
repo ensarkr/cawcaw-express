@@ -2,12 +2,20 @@ import "dotenv/config";
 import { db, sql } from "@vercel/postgres";
 import { doubleReturn } from "../typings/global.js";
 import bcrypt from "bcrypt";
-import { post, post_DB, user, user_DB } from "../typings/database.js";
+import {
+  post,
+  post_DB,
+  user,
+  userPartial,
+  user_DB,
+} from "../typings/database.js";
 import {
   convertDatabasePostsToNormal,
   convertDatabaseUserToNormal,
+  convertDatabaseUsersToPartial,
   convertDateToDatabase,
 } from "./conversion.js";
+import { getPostsResponse } from "../typings/http.js";
 
 async function createUser(
   displayName: string,
@@ -253,12 +261,7 @@ const rowPerPage = 10;
 async function getLatestPosts(
   date: Date,
   page: number
-): Promise<
-  doubleReturn<{
-    posts: post[];
-    pageCount: number;
-  }>
-> {
+): Promise<getPostsResponse> {
   try {
     let dbResponse = await sql`SELECT COUNT(*) as count FROM cawcaw_posts 
       WHERE inserted_at < ${convertDateToDatabase(date)}`;
@@ -293,12 +296,7 @@ async function getFollowingPosts(
   userId: number,
   date: Date,
   page: number
-): Promise<
-  doubleReturn<{
-    posts: post[];
-    pageCount: number;
-  }>
-> {
+): Promise<getPostsResponse> {
   try {
     let dbResponse = await sql`SELECT COUNT(*) as count FROM cawcaw_posts JOIN
     (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId}) 
@@ -336,6 +334,85 @@ async function getFollowingPosts(
   }
 }
 
+async function searchPosts(
+  searchQuery: string,
+  date: Date,
+  page: number
+): Promise<getPostsResponse> {
+  try {
+    let dbResponse = await sql`SELECT COUNT(*) as count FROM cawcaw_posts 
+      WHERE search @@ websearch_to_tsquery(${searchQuery})
+      AND inserted_at < ${convertDateToDatabase(date)}`;
+
+    const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+
+    if (page > pageCount - 1) {
+      return { status: false, message: "Page does not exist." };
+    }
+
+    dbResponse = await sql`SELECT * FROM cawcaw_posts 
+      WHERE search @@ websearch_to_tsquery(${searchQuery})
+      AND inserted_at < ${convertDateToDatabase(date)}
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+
+    return {
+      status: true,
+      value: {
+        posts: convertDatabasePostsToNormal(dbResponse.rows as post_DB[]),
+        pageCount,
+      },
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: false,
+      message: "Database error occurred.",
+    };
+  }
+}
+
+async function searchUsers(
+  searchQuery: string,
+  date: Date,
+  page: number
+): Promise<
+  doubleReturn<{
+    users: userPartial[];
+    pageCount: number;
+  }>
+> {
+  try {
+    let dbResponse = await sql`SELECT COUNT(*) as count FROM cawcaw_users 
+      WHERE search @@ websearch_to_tsquery(${searchQuery})
+      AND inserted_at < ${convertDateToDatabase(date)}`;
+
+    const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+
+    if (page > pageCount - 1) {
+      return { status: false, message: "Page does not exist." };
+    }
+
+    dbResponse = await sql`SELECT * FROM cawcaw_users  
+      WHERE search @@ websearch_to_tsquery(${searchQuery})
+      AND inserted_at < ${convertDateToDatabase(date)}
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+
+    return {
+      status: true,
+      value: {
+        users: convertDatabaseUsersToPartial(dbResponse.rows as user_DB[]),
+        pageCount,
+      },
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: false,
+      message: "Database error occurred.",
+    };
+  }
+}
+
 export {
   createUser,
   fetchUser,
@@ -350,4 +427,6 @@ export {
   commentOnPost,
   getLatestPosts,
   getFollowingPosts,
+  searchPosts,
+  searchUsers,
 };

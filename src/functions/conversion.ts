@@ -1,4 +1,10 @@
-import { user_DB, user, post_DB, post } from "../typings/database.js";
+import {
+  user_DB,
+  user,
+  post_DB,
+  post,
+  userPartial,
+} from "../typings/database.js";
 
 function convertDatabaseUserToNormal(user: user_DB): user {
   return {
@@ -9,6 +15,19 @@ function convertDatabaseUserToNormal(user: user_DB): user {
     followersCount: user.followers_count,
     followingCount: user.following_count,
   };
+}
+
+function convertDatabaseUsersToPartial(users: user_DB[]): userPartial[] {
+  const resultArray: userPartial[] = [];
+
+  for (let i = 0; i < users.length; i++) {
+    resultArray.push({
+      id: users[i].id,
+      username: users[i].username,
+      displayName: users[i].display_name,
+    });
+  }
+  return resultArray;
 }
 
 function convertDatabasePostToNormal(post: post_DB): post {
@@ -63,4 +82,5 @@ export {
   convertDateToDatabase,
   returnURLWithQueries,
   convertDatabasePostsToNormal,
+  convertDatabaseUsersToPartial,
 };

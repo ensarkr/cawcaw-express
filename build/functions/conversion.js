@@ -8,6 +8,17 @@ function convertDatabaseUserToNormal(user) {
         followingCount: user.following_count,
     };
 }
+function convertDatabaseUsersToPartial(users) {
+    const resultArray = [];
+    for (let i = 0; i < users.length; i++) {
+        resultArray.push({
+            id: users[i].id,
+            username: users[i].username,
+            displayName: users[i].display_name,
+        });
+    }
+    return resultArray;
+}
 function convertDatabasePostToNormal(post) {
     return {
         id: post.id,
@@ -46,4 +57,4 @@ function returnURLWithQueries(url, queryObject) {
     }
     return url;
 }
-export { convertDatabaseUserToNormal, convertDatabasePostToNormal, convertDateToDatabase, returnURLWithQueries, convertDatabasePostsToNormal, };
+export { convertDatabaseUserToNormal, convertDatabasePostToNormal, convertDateToDatabase, returnURLWithQueries, convertDatabasePostsToNormal, convertDatabaseUsersToPartial, };

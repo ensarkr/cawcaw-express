@@ -34,4 +34,20 @@ function validateJWT_MW(req: Request, res: Response, next: NextFunction) {
   return;
 }
 
-export { validateJWT_MW };
+function validateJWTPassThrough_MW(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const jwtToken = req.headers.authorization;
+
+  if (jwtToken !== undefined && verifyJWTSignature(jwtToken)) {
+    const payload = decodeJWTPayload(jwtToken);
+    res.locals.userId = payload.userId;
+  }
+
+  next();
+  return;
+}
+
+export { validateJWT_MW, validateJWTPassThrough_MW };

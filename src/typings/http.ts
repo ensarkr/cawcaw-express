@@ -1,4 +1,4 @@
-import { post } from "./database.js";
+import { post, userPartial } from "./database.js";
 import { doubleReturn } from "./global.js";
 
 // * POST
@@ -102,6 +102,18 @@ type getPostsResponse = doubleReturn<{
 }> &
   action;
 
+type searchPostsQuery = { searchQuery: string } & getPostsQuery;
+
+type searchUsersQuery = {
+  searchQuery: string;
+} & getPostsQuery;
+
+type getUsersResponse = doubleReturn<{
+  users: userPartial[];
+  pageCount: number;
+}> &
+  action;
+
 export {
   signUpRequestBody,
   signUpResponseBody,
@@ -128,4 +140,7 @@ export {
   commentOnPostResponseBody,
   getPostsQuery,
   getPostsResponse,
+  searchPostsQuery,
+  searchUsersQuery,
+  getUsersResponse,
 };

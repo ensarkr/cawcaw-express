@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
-import { convertDatabasePostsToNormal, convertDatabaseUserToNormal, convertDateToDatabase, } from "./conversion.js";
+import { convertDatabasePostsToNormal, convertDatabaseUserToNormal, convertDatabaseUsersToPartial, convertDateToDatabase, } from "./conversion.js";
 async function createUser(displayName, username, password) {
     try {
         await sql `INSERT INTO cawcaw_users (display_name, username, hashed_password,description) 
@@ -234,4 +234,62 @@ async function getFollowingPosts(userId, date, page) {
         };
     }
 }
-export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, commentOnPost, getLatestPosts, getFollowingPosts, };
+async function searchPosts(searchQuery, date, page) {
+    try {
+        let dbResponse = await sql `SELECT COUNT(*) as count FROM cawcaw_posts 
+      WHERE search @@ websearch_to_tsquery(${searchQuery})
+      AND inserted_at < ${convertDateToDatabase(date)}`;
+        const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+        if (page > pageCount - 1) {
+            return { status: false, message: "Page does not exist." };
+        }
+        dbResponse = await sql `SELECT * FROM cawcaw_posts 
+      WHERE search @@ websearch_to_tsquery(${searchQuery})
+      AND inserted_at < ${convertDateToDatabase(date)}
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+        return {
+            status: true,
+            value: {
+                posts: convertDatabasePostsToNormal(dbResponse.rows),
+                pageCount,
+            },
+        };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+async function searchUsers(searchQuery, date, page) {
+    try {
+        let dbResponse = await sql `SELECT COUNT(*) as count FROM cawcaw_users 
+      WHERE search @@ websearch_to_tsquery(${searchQuery})
+      AND inserted_at < ${convertDateToDatabase(date)}`;
+        const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+        if (page > pageCount - 1) {
+            return { status: false, message: "Page does not exist." };
+        }
+        dbResponse = await sql `SELECT * FROM cawcaw_users  
+      WHERE search @@ websearch_to_tsquery(${searchQuery})
+      AND inserted_at < ${convertDateToDatabase(date)}
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+        return {
+            status: true,
+            value: {
+                users: convertDatabaseUsersToPartial(dbResponse.rows),
+                pageCount,
+            },
+        };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, commentOnPost, getLatestPosts, getFollowingPosts, searchPosts, searchUsers, };
