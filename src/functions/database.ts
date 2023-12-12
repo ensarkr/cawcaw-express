@@ -4,18 +4,20 @@ import { doubleReturn } from "../typings/global.js";
 import bcrypt from "bcrypt";
 import {
   post,
+  postComment_DB,
   post_DB,
   user,
   userPartial,
   user_DB,
 } from "../typings/database.js";
 import {
+  convertDatabaseCommentsToNormal,
   convertDatabasePostsToNormal,
   convertDatabaseUserToNormal,
   convertDatabaseUsersToPartial,
   convertDateToDatabase,
 } from "./conversion.js";
-import { getPostsResponse } from "../typings/http.js";
+import { getCommentsResponse, getPostsResponse } from "../typings/http.js";
 
 async function createUser(
   displayName: string,
@@ -558,6 +560,133 @@ async function fetchUserPosts(
   }
 }
 
+async function fetchUserComments(
+  userId: number,
+  date: Date,
+  page: number
+): Promise<getCommentsResponse> {
+  try {
+    let dbResponse =
+      await sql`SELECT COUNT(*) as count FROM cawcaw_post_comments
+      WHERE user_id = ${userId}  AND inserted_at < ${convertDateToDatabase(
+        date
+      )}`;
+
+    const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+
+    if (page > pageCount - 1) {
+      return { status: false, message: "Page does not exist." };
+    }
+
+    dbResponse = await sql`SELECT * FROM cawcaw_post_comments 
+      WHERE user_id = ${userId}  
+      AND inserted_at < ${convertDateToDatabase(date)} 
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+
+    return {
+      status: true,
+      value: {
+        comments: convertDatabaseCommentsToNormal(
+          dbResponse.rows as postComment_DB[]
+        ),
+        pageCount,
+      },
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: false,
+      message: "Database error occurred.",
+    };
+  }
+}
+
+async function fetchUserLikes(
+  userId: number,
+  date: Date,
+  page: number
+): Promise<getPostsResponse> {
+  try {
+    let dbResponse = await sql`SELECT COUNT(*) as count 
+      FROM cawcaw_post_likes  JOIN cawcaw_posts
+      WHERE cawcaw_post_likes.user_id = ${userId}  
+      AND inserted_at < ${convertDateToDatabase(date)}`;
+
+    const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+
+    if (page > pageCount - 1) {
+      return { status: false, message: "Page does not exist." };
+    }
+
+    dbResponse = await sql`SELECT 
+      cawcaw_posts.id,
+      cawcaw_posts.user_id,
+      cawcaw_posts.text,
+      cawcaw_posts.image_url,
+      cawcaw_posts.likes_count,
+      cawcaw_posts.comments_count,
+      cawcaw_posts.inserted_at
+      FROM cawcaw_post_likes  JOIN cawcaw_posts
+      WHERE cawcaw_post_likes.user_id = ${userId}  
+      AND inserted_at < ${convertDateToDatabase(date)} 
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+
+    return {
+      status: true,
+      value: {
+        posts: convertDatabasePostsToNormal(dbResponse.rows as post_DB[]),
+        pageCount,
+      },
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: false,
+      message: "Database error occurred.",
+    };
+  }
+}
+
+async function fetchPostComments(
+  postId: number,
+  date: Date,
+  page: number
+): Promise<getCommentsResponse> {
+  try {
+    let dbResponse = await sql`SELECT COUNT(*) as count 
+      FROM cawcaw_post_comments 
+      WHERE post_id = ${postId}  
+      AND inserted_at < ${convertDateToDatabase(date)}`;
+
+    const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+
+    if (page > pageCount - 1) {
+      return { status: false, message: "Page does not exist." };
+    }
+
+    dbResponse = await sql`SELECT *  FROM cawcaw_post_comments 
+      WHERE post_id = ${postId}   
+      AND inserted_at < ${convertDateToDatabase(date)} 
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+
+    return {
+      status: true,
+      value: {
+        comments: convertDatabaseCommentsToNormal(
+          dbResponse.rows as postComment_DB[]
+        ),
+        pageCount,
+      },
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: false,
+      message: "Database error occurred.",
+    };
+  }
+}
+
 export {
   createUser,
   fetchUser,
@@ -578,4 +707,7 @@ export {
   fetchUserFollowers,
   fetchUserFollowings,
   fetchUserPosts,
+  fetchUserComments,
+  fetchUserLikes,
+  fetchPostComments,
 };

@@ -1,4 +1,4 @@
-import { post, user, userPartial } from "./database.js";
+import { post, postComment, user, userPartial } from "./database.js";
 import { doubleReturn } from "./global.js";
 
 // * POST
@@ -116,6 +116,12 @@ type getUsersResponse = doubleReturn<{
 
 type getUserResponse = doubleReturn<user> & action;
 
+type getCommentsResponse = doubleReturn<{
+  comments: postComment[];
+  pageCount: number;
+}> &
+  action;
+
 export {
   signUpRequestBody,
   signUpResponseBody,
@@ -146,4 +152,5 @@ export {
   searchUsersQuery,
   getUsersResponse,
   getUserResponse,
+  getCommentsResponse,
 };

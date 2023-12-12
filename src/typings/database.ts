@@ -45,12 +45,20 @@ type postLikes_DB = {
   post_id: number;
 };
 
-type postComments_DB = {
+type postComment_DB = {
   id: number;
   user_id: number;
   post_id: number;
   comment: string;
   inserted_at: dbDate;
+};
+
+type postComment = {
+  id: number;
+  userId: number;
+  postId: number;
+  comment: string;
+  insertedAt: Date;
 };
 
 type post = {
@@ -70,6 +78,7 @@ export {
   followRelation_DB,
   post_DB,
   postLikes_DB,
-  postComments_DB,
+  postComment_DB,
+  postComment,
   post,
 };

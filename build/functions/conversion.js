@@ -37,6 +37,22 @@ function convertDatabasePostsToNormal(posts) {
     }
     return resultArray;
 }
+function convertDatabaseCommentToNormal(comment) {
+    return {
+        id: comment.id,
+        userId: comment.user_id,
+        postId: comment.post_id,
+        comment: comment.comment,
+        insertedAt: new Date(comment.inserted_at),
+    };
+}
+function convertDatabaseCommentsToNormal(comments) {
+    const resultArray = [];
+    for (let i = 0; i < comments.length; i++) {
+        resultArray.push(convertDatabaseCommentToNormal(comments[i]));
+    }
+    return resultArray;
+}
 function convertDateToDatabase(date) {
     return date.toISOString().split("T")[0];
 }
@@ -51,4 +67,4 @@ function returnURLWithQueries(url, queryObject) {
     }
     return url;
 }
-export { convertDatabaseUserToNormal, convertDatabasePostToNormal, convertDateToDatabase, returnURLWithQueries, convertDatabasePostsToNormal, convertDatabaseUsersToPartial, };
+export { convertDatabaseUserToNormal, convertDatabasePostToNormal, convertDateToDatabase, returnURLWithQueries, convertDatabasePostsToNormal, convertDatabaseUsersToPartial, convertDatabaseCommentsToNormal, };

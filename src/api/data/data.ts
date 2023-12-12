@@ -1,6 +1,7 @@
 import express from "express";
 import "dotenv/config";
 import {
+  getCommentsResponse,
   getPostsQuery,
   getPostsResponse,
   getUserResponse,
@@ -8,9 +9,12 @@ import {
   searchPostsQuery,
 } from "../../typings/http.js";
 import {
+  fetchPostComments,
   fetchPublicUser,
+  fetchUserComments,
   fetchUserFollowers,
   fetchUserFollowings,
+  fetchUserLikes,
   fetchUserPosts,
   getFollowingPosts,
   getLatestPosts,
@@ -290,6 +294,78 @@ data.get(
           status: false,
           message: dbResponse.message,
         } as getPostsResponse)
+        .end();
+    }
+    return;
+  }
+);
+
+data.get(
+  "/api/data/user/:id/likes",
+  checkQueries_MW(["endDate", "page"]),
+  async (req, res) => {
+    const queries: getPostsQuery = {
+      page: parseInt(req.query.page as string),
+      endDate: new Date(req.query.endDate as string),
+    };
+
+    const dbResponse = await fetchUserLikes(
+      parseInt(req.params.id),
+      queries.endDate,
+      queries.page
+    );
+
+    if (dbResponse.status) {
+      res
+        .status(200)
+        .json({
+          status: true,
+          value: dbResponse.value,
+        } as getPostsResponse)
+        .end();
+    } else {
+      res
+        .status(400)
+        .json({
+          status: false,
+          message: dbResponse.message,
+        } as getPostsResponse)
+        .end();
+    }
+    return;
+  }
+);
+
+data.get(
+  "/api/data/post/:id/comments",
+  checkQueries_MW(["endDate", "page"]),
+  async (req, res) => {
+    const queries: getPostsQuery = {
+      page: parseInt(req.query.page as string),
+      endDate: new Date(req.query.endDate as string),
+    };
+
+    const dbResponse = await fetchPostComments(
+      parseInt(req.params.id),
+      queries.endDate,
+      queries.page
+    );
+
+    if (dbResponse.status) {
+      res
+        .status(200)
+        .json({
+          status: true,
+          value: dbResponse.value,
+        } as getCommentsResponse)
+        .end();
+    } else {
+      res
+        .status(400)
+        .json({
+          status: false,
+          message: dbResponse.message,
+        } as getCommentsResponse)
         .end();
     }
     return;

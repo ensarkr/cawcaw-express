@@ -4,6 +4,8 @@ import {
   post_DB,
   post,
   userPartial,
+  postComment_DB,
+  postComment,
 } from "../typings/database.js";
 
 function convertDatabaseUserToNormal(user: user_DB): user {
@@ -51,6 +53,28 @@ function convertDatabasePostsToNormal(posts: post_DB[]): post[] {
   return resultArray;
 }
 
+function convertDatabaseCommentToNormal(comment: postComment_DB): postComment {
+  return {
+    id: comment.id,
+    userId: comment.user_id,
+    postId: comment.post_id,
+    comment: comment.comment,
+    insertedAt: new Date(comment.inserted_at),
+  };
+}
+
+function convertDatabaseCommentsToNormal(
+  comments: postComment_DB[]
+): postComment[] {
+  const resultArray: postComment[] = [];
+
+  for (let i = 0; i < comments.length; i++) {
+    resultArray.push(convertDatabaseCommentToNormal(comments[i]));
+  }
+
+  return resultArray;
+}
+
 function convertDateToDatabase(date: Date) {
   return date.toISOString().split("T")[0];
 }
@@ -77,4 +101,5 @@ export {
   returnURLWithQueries,
   convertDatabasePostsToNormal,
   convertDatabaseUsersToPartial,
+  convertDatabaseCommentsToNormal,
 };

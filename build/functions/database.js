@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
-import { convertDatabasePostsToNormal, convertDatabaseUserToNormal, convertDatabaseUsersToPartial, convertDateToDatabase, } from "./conversion.js";
+import { convertDatabaseCommentsToNormal, convertDatabasePostsToNormal, convertDatabaseUserToNormal, convertDatabaseUsersToPartial, convertDateToDatabase, } from "./conversion.js";
 async function createUser(displayName, username, password) {
     try {
         await sql `INSERT INTO cawcaw_users (display_name, username, hashed_password,description) 
@@ -397,4 +397,100 @@ async function fetchUserPosts(userId, date, page) {
         };
     }
 }
-export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, commentOnPost, getLatestPosts, getFollowingPosts, searchPosts, searchUsers, fetchPublicUser, fetchUserFollowers, fetchUserFollowings, fetchUserPosts, };
+async function fetchUserComments(userId, date, page) {
+    try {
+        let dbResponse = await sql `SELECT COUNT(*) as count FROM cawcaw_post_comments
+      WHERE user_id = ${userId}  AND inserted_at < ${convertDateToDatabase(date)}`;
+        const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+        if (page > pageCount - 1) {
+            return { status: false, message: "Page does not exist." };
+        }
+        dbResponse = await sql `SELECT * FROM cawcaw_post_comments 
+      WHERE user_id = ${userId}  
+      AND inserted_at < ${convertDateToDatabase(date)} 
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+        return {
+            status: true,
+            value: {
+                comments: convertDatabaseCommentsToNormal(dbResponse.rows),
+                pageCount,
+            },
+        };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+async function fetchUserLikes(userId, date, page) {
+    try {
+        let dbResponse = await sql `SELECT COUNT(*) as count 
+      FROM cawcaw_post_likes  JOIN cawcaw_posts
+      WHERE cawcaw_post_likes.user_id = ${userId}  
+      AND inserted_at < ${convertDateToDatabase(date)}`;
+        const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+        if (page > pageCount - 1) {
+            return { status: false, message: "Page does not exist." };
+        }
+        dbResponse = await sql `SELECT 
+      cawcaw_posts.id,
+      cawcaw_posts.user_id,
+      cawcaw_posts.text,
+      cawcaw_posts.image_url,
+      cawcaw_posts.likes_count,
+      cawcaw_posts.comments_count,
+      cawcaw_posts.inserted_at
+      FROM cawcaw_post_likes  JOIN cawcaw_posts
+      WHERE cawcaw_post_likes.user_id = ${userId}  
+      AND inserted_at < ${convertDateToDatabase(date)} 
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+        return {
+            status: true,
+            value: {
+                posts: convertDatabasePostsToNormal(dbResponse.rows),
+                pageCount,
+            },
+        };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+async function fetchPostComments(postId, date, page) {
+    try {
+        let dbResponse = await sql `SELECT COUNT(*) as count 
+      FROM cawcaw_post_comments 
+      WHERE post_id = ${postId}  
+      AND inserted_at < ${convertDateToDatabase(date)}`;
+        const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+        if (page > pageCount - 1) {
+            return { status: false, message: "Page does not exist." };
+        }
+        dbResponse = await sql `SELECT *  FROM cawcaw_post_comments 
+      WHERE post_id = ${postId}   
+      AND inserted_at < ${convertDateToDatabase(date)} 
+      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+        return {
+            status: true,
+            value: {
+                comments: convertDatabaseCommentsToNormal(dbResponse.rows),
+                pageCount,
+            },
+        };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, commentOnPost, getLatestPosts, getFollowingPosts, searchPosts, searchUsers, fetchPublicUser, fetchUserFollowers, fetchUserFollowings, fetchUserPosts, fetchUserComments, fetchUserLikes, fetchPostComments, };
