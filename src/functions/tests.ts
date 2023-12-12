@@ -2,7 +2,7 @@ import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
 import {
   followRelation_DB,
-  postComments_DB,
+  postComment_DB,
   postLikes_DB,
   post_DB,
   user_DB,
@@ -305,10 +305,24 @@ async function getAllPostLikesByTestUser(): Promise<postLikes_DB[]> {
   ).rows as postLikes_DB[];
 }
 
-async function getAllCommentsByTestUser(): Promise<postComments_DB[]> {
+async function addLikeByTestUser(): Promise<postLikes_DB[]> {
+  return (
+    await sql`INSERT INTO cawcaw_post_likes (user_id,post_id)
+    VALUES (${testUserData.id},${testPostData.id})`
+  ).rows as postLikes_DB[];
+}
+
+async function getAllCommentsByTestUser(): Promise<postComment_DB[]> {
   return (
     await sql`SELECT * FROM cawcaw_post_comments WHERE user_id = ${testUserData.id}`
-  ).rows as postComments_DB[];
+  ).rows as postComment_DB[];
+}
+
+async function insertCommentsByTestUser(commentCount: number) {
+  for (let i = 0; i < commentCount; i++) {
+    await sql`INSERT INTO cawcaw_post_comments ( user_id, post_id, comment )
+    VALUES (${testUserData.id} ,${testPostData.id}, ${testPostData.text})`;
+  }
 }
 
 export {
@@ -335,4 +349,6 @@ export {
   insertPrefilledPostsByTestUser,
   insertPrefilledUsers,
   deletePrefilledUsers,
+  insertCommentsByTestUser,
+  addLikeByTestUser,
 };

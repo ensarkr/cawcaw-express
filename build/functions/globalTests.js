@@ -32,7 +32,7 @@ const checkJWT_TEST = (mainUrl, requestOptions) => {
 };
 const checkQueries_TEST = (mainUrl, requestOptions, queries, returnURLWithQueries) => {
     if (queries.endDate)
-        test("no endDate queries", async () => {
+        test("no endDate query", async () => {
             const response = await fetch(returnURLWithQueries(mainUrl, {
                 page: 0,
                 searchQuery: "test",

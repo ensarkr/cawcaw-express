@@ -46,7 +46,7 @@ const checkQueries_TEST = (
   returnURLWithQueries: (url: string, rec: {}) => string
 ) => {
   if (queries.endDate)
-    test("no endDate queries", async () => {
+    test("no endDate query", async () => {
       const response = await fetch(
         returnURLWithQueries(mainUrl, {
           page: 0,
