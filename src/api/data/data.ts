@@ -337,6 +337,42 @@ data.get(
 );
 
 data.get(
+  "/api/data/user/:id/comments",
+  checkQueries_MW(["endDate", "page"]),
+  async (req, res) => {
+    const queries: getPostsQuery = {
+      page: parseInt(req.query.page as string),
+      endDate: new Date(req.query.endDate as string),
+    };
+
+    const dbResponse = await fetchUserComments(
+      parseInt(req.params.id),
+      queries.endDate,
+      queries.page
+    );
+
+    if (dbResponse.status) {
+      res
+        .status(200)
+        .json({
+          status: true,
+          value: dbResponse.value,
+        } as getCommentsResponse)
+        .end();
+    } else {
+      res
+        .status(400)
+        .json({
+          status: false,
+          message: dbResponse.message,
+        } as getCommentsResponse)
+        .end();
+    }
+    return;
+  }
+);
+
+data.get(
   "/api/data/post/:id/comments",
   checkQueries_MW(["endDate", "page"]),
   async (req, res) => {

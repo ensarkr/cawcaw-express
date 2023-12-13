@@ -17,13 +17,14 @@ import {
   insertTestUser,
   insertTestUser2,
   testHost,
+  testPostData,
   testUserData,
   testUserData2,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
 import { checkQueries_TEST } from "../../functions/globalTests";
 
-const mainUrl = testHost + "/data/post/" + testUserData.id + "/comments";
+const mainUrl = testHost + "/data/post/" + testPostData.id + "/comments";
 
 const requestQuery: getPostsQuery = {
   endDate: new Date(Date.now() + 99999999999),
@@ -36,7 +37,7 @@ const requestOptions: RequestInit = {
   method: "GET",
 };
 
-describe("get user comments ", () => {
+describe("get post comments ", () => {
   beforeAll(async () => {
     await insertTestUser();
     await insertPostByTestUser();

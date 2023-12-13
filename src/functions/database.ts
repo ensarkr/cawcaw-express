@@ -608,7 +608,8 @@ async function fetchUserLikes(
 ): Promise<getPostsResponse> {
   try {
     let dbResponse = await sql`SELECT COUNT(*) as count 
-      FROM cawcaw_post_likes  JOIN cawcaw_posts
+      FROM cawcaw_post_likes JOIN cawcaw_posts
+      ON cawcaw_post_likes.post_id = cawcaw_posts.id
       WHERE cawcaw_post_likes.user_id = ${userId}  
       AND inserted_at < ${convertDateToDatabase(date)}`;
 
@@ -626,7 +627,8 @@ async function fetchUserLikes(
       cawcaw_posts.likes_count,
       cawcaw_posts.comments_count,
       cawcaw_posts.inserted_at
-      FROM cawcaw_post_likes  JOIN cawcaw_posts
+      FROM cawcaw_post_likes JOIN cawcaw_posts 
+      ON cawcaw_post_likes.post_id = cawcaw_posts.id
       WHERE cawcaw_post_likes.user_id = ${userId}  
       AND inserted_at < ${convertDateToDatabase(date)} 
       LIMIT ${10} OFFSET ${rowPerPage * page}`;

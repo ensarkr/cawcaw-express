@@ -23,7 +23,7 @@ import {
 import { returnURLWithQueries } from "../../functions/conversion";
 import { checkQueries_TEST } from "../../functions/globalTests";
 
-const mainUrl = testHost + "/data/user/" + testUserData.id + "/posts";
+const mainUrl = testHost + "/data/user/" + testUserData.id + "/likes";
 
 const requestQuery: getPostsQuery = {
   endDate: new Date(Date.now() + 99999999999),
@@ -36,7 +36,7 @@ const requestOptions: RequestInit = {
   method: "GET",
 };
 
-describe("get user posts ", () => {
+describe("get user likes ", () => {
   beforeAll(async () => {
     await insertTestUser();
     await insertPostByTestUser();
