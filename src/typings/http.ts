@@ -115,6 +115,7 @@ type getUsersResponse = doubleReturn<{
   action;
 
 type getUserResponse = doubleReturn<user> & action;
+type getPostResponse = doubleReturn<post> & action;
 
 type getCommentsResponse = doubleReturn<{
   comments: postComment[];
@@ -153,4 +154,5 @@ export {
   getUsersResponse,
   getUserResponse,
   getCommentsResponse,
+  getPostResponse,
 };

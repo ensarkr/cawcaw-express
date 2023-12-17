@@ -2,6 +2,7 @@ import express from "express";
 import "dotenv/config";
 import {
   getCommentsResponse,
+  getPostResponse,
   getPostsQuery,
   getPostsResponse,
   getUserResponse,
@@ -9,6 +10,7 @@ import {
   searchPostsQuery,
 } from "../../typings/http.js";
 import {
+  fetchPost,
   fetchPostComments,
   fetchPublicUser,
   fetchUserComments,
@@ -407,5 +409,28 @@ data.get(
     return;
   }
 );
+
+data.get("/api/data/post/:id", async (req, res) => {
+  const dbResponse = await fetchPost(parseInt(req.params.id));
+
+  if (dbResponse.status) {
+    res
+      .status(200)
+      .json({
+        status: true,
+        value: dbResponse.value,
+      } as getPostResponse)
+      .end();
+  } else {
+    res
+      .status(400)
+      .json({
+        status: false,
+        message: dbResponse.message,
+      } as getPostResponse)
+      .end();
+  }
+  return;
+});
 
 export { data };

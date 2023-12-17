@@ -12,6 +12,7 @@ import {
 } from "../typings/database.js";
 import {
   convertDatabaseCommentsToNormal,
+  convertDatabasePostToNormal,
   convertDatabasePostsToNormal,
   convertDatabaseUserToNormal,
   convertDatabaseUsersToPartial,
@@ -689,6 +690,25 @@ async function fetchPostComments(
   }
 }
 
+async function fetchPost(postId: number): Promise<doubleReturn<post>> {
+  try {
+    const dbResponse =
+      await sql`SELECT * FROM cawcaw_users WHERE id = ${postId}`;
+
+    if (dbResponse.rowCount === 0)
+      return { status: false, message: "Post not found." };
+
+    const post = dbResponse.rows[0] as post_DB;
+
+    return { status: true, value: convertDatabasePostToNormal(post) };
+  } catch (e) {
+    return {
+      status: false,
+      message: "Database error occurred.",
+    };
+  }
+}
+
 export {
   createUser,
   fetchUser,
@@ -712,4 +732,5 @@ export {
   fetchUserComments,
   fetchUserLikes,
   fetchPostComments,
+  fetchPost,
 };

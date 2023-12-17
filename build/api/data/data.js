@@ -1,6 +1,6 @@
 import express from "express";
 import "dotenv/config";
-import { fetchPostComments, fetchPublicUser, fetchUserComments, fetchUserFollowers, fetchUserFollowings, fetchUserLikes, fetchUserPosts, getFollowingPosts, getLatestPosts, searchPosts, searchUsers, } from "../../functions/database.js";
+import { fetchPost, fetchPostComments, fetchPublicUser, fetchUserComments, fetchUserFollowers, fetchUserFollowings, fetchUserLikes, fetchUserPosts, getFollowingPosts, getLatestPosts, searchPosts, searchUsers, } from "../../functions/database.js";
 import { validateJWT_MW } from "../../middlewares/jwt.js";
 import { checkQueries_MW } from "../../middlewares/checkQueries.js";
 const data = express();
@@ -268,6 +268,28 @@ data.get("/api/data/post/:id/comments", checkQueries_MW(["endDate", "page"]), as
         endDate: new Date(req.query.endDate),
     };
     const dbResponse = await fetchPostComments(parseInt(req.params.id), queries.endDate, queries.page);
+    if (dbResponse.status) {
+        res
+            .status(200)
+            .json({
+            status: true,
+            value: dbResponse.value,
+        })
+            .end();
+    }
+    else {
+        res
+            .status(400)
+            .json({
+            status: false,
+            message: dbResponse.message,
+        })
+            .end();
+    }
+    return;
+});
+data.get("/api/data/post/:id", async (req, res) => {
+    const dbResponse = await fetchPost(parseInt(req.params.id));
     if (dbResponse.status) {
         res
             .status(200)

@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
-import { convertDatabaseCommentsToNormal, convertDatabasePostsToNormal, convertDatabaseUserToNormal, convertDatabaseUsersToPartial, convertDateToDatabase, } from "./conversion.js";
+import { convertDatabaseCommentsToNormal, convertDatabasePostToNormal, convertDatabasePostsToNormal, convertDatabaseUserToNormal, convertDatabaseUsersToPartial, convertDateToDatabase, } from "./conversion.js";
 async function createUser(displayName, username, password) {
     try {
         await sql `INSERT INTO cawcaw_users (display_name, username, hashed_password,description) 
@@ -495,4 +495,19 @@ async function fetchPostComments(postId, date, page) {
         };
     }
 }
-export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, commentOnPost, getLatestPosts, getFollowingPosts, searchPosts, searchUsers, fetchPublicUser, fetchUserFollowers, fetchUserFollowings, fetchUserPosts, fetchUserComments, fetchUserLikes, fetchPostComments, };
+async function fetchPost(postId) {
+    try {
+        const dbResponse = await sql `SELECT * FROM cawcaw_users WHERE id = ${postId}`;
+        if (dbResponse.rowCount === 0)
+            return { status: false, message: "Post not found." };
+        const post = dbResponse.rows[0];
+        return { status: true, value: convertDatabasePostToNormal(post) };
+    }
+    catch (e) {
+        return {
+            status: false,
+            message: "Database error occurred.",
+        };
+    }
+}
+export { createUser, fetchUser, updateUser, updatePassword, followUser, unfollowUser, createPost, removePost, likePost, unlikePost, commentOnPost, getLatestPosts, getFollowingPosts, searchPosts, searchUsers, fetchPublicUser, fetchUserFollowers, fetchUserFollowings, fetchUserPosts, fetchUserComments, fetchUserLikes, fetchPostComments, fetchPost, };
