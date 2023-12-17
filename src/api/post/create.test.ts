@@ -2,12 +2,11 @@ import "dotenv/config";
 import {
   createPostRequestBody,
   createPostResponseBody,
-  jwtBadResponse,
 } from "../../typings/http";
 import { createJWT } from "../../functions/jwt";
 import {
-  deleteTestUser,
-  getPostsByTestUser,
+  deleteTestUsers,
+  getPostsOfTestUser,
   insertTestUser,
   testUserData,
   testHost,
@@ -54,7 +53,7 @@ describe("create post", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
 
   checkJWT_TEST(mainUrl, requestOptions);
@@ -172,7 +171,7 @@ describe("create post", () => {
 
     expect(response.status).toEqual(200);
 
-    const posts = await getPostsByTestUser();
+    const posts = await getPostsOfTestUser();
 
     expect(posts[0].text).toBe(requestBody.text);
     expect(posts[0].image_url).toBeNull();
@@ -185,7 +184,7 @@ describe("create post", () => {
 
     expect(response.status).toEqual(200);
 
-    const posts = await getPostsByTestUser();
+    const posts = await getPostsOfTestUser();
 
     expect(posts[1].text).toBe(requestBody.text);
     expect(posts[1].image_url !== null).toBe(true);

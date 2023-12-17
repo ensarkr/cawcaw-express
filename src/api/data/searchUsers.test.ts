@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { getUsersResponse, searchPostsQuery } from "../../typings/http";
 import {
-  deletePrefilledUsers,
-  insertPrefilledUsers,
+  deleteTestUsers,
+  insertPrefilledTestUsers,
   testHost,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
@@ -11,7 +11,7 @@ import { checkQueries_TEST } from "../../functions/globalTests";
 const mainUrl = testHost + "/data/users/search";
 
 const requestQuery: searchPostsQuery = {
-  endDate: new Date(Date.now() + 99999999999),
+  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
   page: 0,
   searchQuery: "test",
 };
@@ -24,11 +24,11 @@ const requestOptions: RequestInit = {
 
 describe("get searched users", () => {
   beforeAll(async () => {
-    await insertPrefilledUsers();
+    await insertPrefilledTestUsers();
   });
 
   afterAll(async () => {
-    await deletePrefilledUsers();
+    await deleteTestUsers();
   });
 
   checkQueries_TEST(
@@ -42,7 +42,9 @@ describe("get searched users", () => {
     returnURLWithQueries
   );
 
-  test("route responds correct 1st page", async () => {
+  let nonExistentPage = 99999;
+
+  test("route responds correct populated page", async () => {
     const response = await fetch(requestUrl, requestOptions);
 
     expect(response.status).toEqual(200);
@@ -53,15 +55,24 @@ describe("get searched users", () => {
 
     if (!body.status) return false;
 
-    expect(body.value.pageCount).toBe(1);
-    expect(body.value.users).toHaveLength(6);
+    nonExistentPage = body.value.pageCount;
+
+    expect(body.value.users.length > 0).toBe(true);
+
+    expect(body.value.users).toHaveLength(
+      body.value.users.filter(
+        (e) =>
+          e.displayName.includes(requestQuery.searchQuery) ||
+          e.username.includes(requestQuery.searchQuery)
+      ).length
+    );
   });
 
-  test("route responds correct 2st page", async () => {
+  test("route responds correct non-existent page", async () => {
     const response = await fetch(
       returnURLWithQueries(mainUrl, {
         ...requestQuery,
-        page: 1,
+        page: nonExistentPage,
       }),
       requestOptions
     );

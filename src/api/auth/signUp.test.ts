@@ -1,6 +1,11 @@
 import "dotenv/config";
 import { signUpRequestBody, signUpResponseBody } from "../../typings/http";
-import { deleteTestUser, testHost, testUserData } from "../../functions/tests";
+import {
+  deleteTestUserByUsername,
+  deleteTestUsers,
+  testHost,
+  testUserData,
+} from "../../functions/tests";
 import { checkEmptyBody_TEST } from "../../functions/globalTests";
 
 const mainUrl = testHost + "/auth/signUp";
@@ -21,12 +26,8 @@ describe("sign up", () => {
     }),
   };
 
-  beforeAll(async () => {
-    await deleteTestUser();
-  });
-
   afterAll(async () => {
-    await deleteTestUser(`WHERE username = ${testUserData.username}`);
+    await deleteTestUserByUsername();
   });
 
   checkEmptyBody_TEST(mainUrl, requestOptions);

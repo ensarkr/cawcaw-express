@@ -2,19 +2,17 @@ import "dotenv/config";
 import {
   commentOnPostRequestBody,
   commentOnPostResponseBody,
-  jwtBadResponse,
 } from "../../typings/http";
 import { createJWT } from "../../functions/jwt";
 import {
-  deleteTestUser,
+  deleteTestUsers,
   insertTestUser,
   testUserData,
   testHost,
   testPostData,
-  getPostsByTestUser,
-  getAllPostLikesByTestUser,
+  getPostsOfTestUser,
   insertPostByTestUser,
-  getAllCommentsByTestUser,
+  getAllCommentsOfTestUser,
 } from "../../functions/tests";
 import {
   checkEmptyBody_TEST,
@@ -41,14 +39,14 @@ const requestOptions: RequestInit = {
   body: JSON.stringify(requestBody),
 };
 
-describe("comment on post", () => {
+describe("comment on a post", () => {
   beforeAll(async () => {
     await insertTestUser();
     await insertPostByTestUser();
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
 
   checkJWT_TEST(mainUrl, requestOptions);
@@ -79,8 +77,8 @@ describe("comment on post", () => {
 
     expect(response.status).toEqual(200);
 
-    const comments = await getAllCommentsByTestUser();
-    const posts = await getPostsByTestUser();
+    const comments = await getAllCommentsOfTestUser();
+    const posts = await getPostsOfTestUser();
 
     expect(comments).toHaveLength(1);
     expect(comments[0].comment).toBe(requestBody.comment);

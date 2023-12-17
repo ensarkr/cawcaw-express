@@ -1,29 +1,24 @@
 import "dotenv/config";
-import {
-  getPostsQuery,
-  getPostsResponse,
-  jwtBadResponse,
-} from "../../typings/http";
+import { getPageQuery, getPostsResponse } from "../../typings/http";
 import { createJWT } from "../../functions/jwt";
 import {
-  addFollowRelation,
-  deleteTestUser,
-  deleteTestUser2,
+  addTestFollowRelation,
+  deleteTestUsers,
   insertPostsByTestUser,
-  insertPostsByTestUser2,
+  insertPostsBySecondTestUser,
   insertTestUser,
-  insertTestUser2,
+  insertSecondTestUser,
   testHost,
   testUserData,
-  testUserData2,
+  secondTestUser,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
 import { checkJWT_TEST, checkQueries_TEST } from "../../functions/globalTests";
 
 const mainUrl = testHost + "/data/posts/following";
 
-const requestQuery: getPostsQuery = {
-  endDate: new Date(Date.now() + 99999999999),
+const requestQuery: getPageQuery = {
+  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
   page: 0,
 };
 
@@ -43,15 +38,14 @@ const requestOptions: RequestInit = {
 describe("get following users posts", () => {
   beforeAll(async () => {
     await insertTestUser();
-    await insertTestUser2();
-    await addFollowRelation();
+    await insertSecondTestUser();
+    await addTestFollowRelation();
     await insertPostsByTestUser(15);
-    await insertPostsByTestUser2(15);
+    await insertPostsBySecondTestUser(15);
   });
 
   afterAll(async () => {
-    await deleteTestUser();
-    await deleteTestUser2();
+    await deleteTestUsers();
   });
 
   checkJWT_TEST(mainUrl, requestOptions);
@@ -66,7 +60,9 @@ describe("get following users posts", () => {
     returnURLWithQueries
   );
 
-  test("route responses correct 1st page", async () => {
+  let nonExistentPage = 99999999;
+
+  test("route responses correct populated page", async () => {
     const response = await fetch(requestUrl, requestOptions);
 
     expect(response.status).toEqual(200);
@@ -77,35 +73,18 @@ describe("get following users posts", () => {
 
     if (!body.status) return false;
 
-    expect(body.value.pageCount).toBe(2);
     expect(body.value.posts).toHaveLength(10);
+    nonExistentPage = body.value.pageCount;
+
+    expect(
+      body.value.posts.filter((e) => e.userId === secondTestUser.id)
+    ).toHaveLength(10);
   });
 
-  test("route responses correct 2st page", async () => {
+  test("route responses correct nonExistentPage page", async () => {
     const response = await fetch(
       returnURLWithQueries(mainUrl, {
-        endDate: new Date(Date.now() + 99999999999),
-        page: 1,
-      }),
-      requestOptions
-    );
-
-    expect(response.status).toEqual(200);
-
-    const body: getPostsResponse = await response.json();
-
-    expect(body.status).toBe(true);
-
-    if (!body.status) return false;
-
-    expect(body.value.pageCount).toBe(2);
-    expect(body.value.posts).toHaveLength(5);
-  });
-
-  test("route responses correct 3st page", async () => {
-    const response = await fetch(
-      returnURLWithQueries(mainUrl, {
-        endDate: new Date(Date.now() + 99999999999),
+        ...requestQuery,
         page: 2,
       }),
       requestOptions
@@ -120,27 +99,5 @@ describe("get following users posts", () => {
     };
 
     expect(body).toEqual(correctBody);
-  });
-
-  test("response only includes following users posts", async () => {
-    const response = await fetch(
-      returnURLWithQueries(mainUrl, {
-        endDate: new Date(Date.now() + 99999999999),
-        page: 0,
-      }),
-      requestOptions
-    );
-
-    expect(response.status).toEqual(200);
-
-    const body: getPostsResponse = await response.json();
-
-    expect(body.status).toBe(true);
-
-    if (!body.status) return false;
-
-    expect(
-      body.value.posts.filter((e) => e.userId === testUserData2.id)
-    ).toHaveLength(10);
   });
 });

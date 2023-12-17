@@ -22,6 +22,7 @@ auth.post("/api/auth/signUp", async (req, res) => {
             .end();
         return;
     }
+    console.log("Sign up requested, username: " + body.username);
     if (body.password !== body.rePassword) {
         res
             .status(400)
@@ -65,6 +66,7 @@ auth.post("/api/auth/signIn", async (req, res) => {
             .end();
         return;
     }
+    console.log("Sign in requested, username: " + body.username);
     const dbResponse = await fetchUser(body.username, body.password);
     if (dbResponse.status) {
         console.log("User signed in, jwt created, username: " + body.username);

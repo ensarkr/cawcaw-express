@@ -18,6 +18,7 @@ profile.post("/api/profile/edit", validateJWT_MW, async (req, res) => {
             .end();
         return;
     }
+    console.log("Profile edit requested, user id: " + res.locals.userId);
     const dbResponse = await updateUser(res.locals.userId, body.displayName, body.username, body.description);
     if (dbResponse.status) {
         res
@@ -55,6 +56,7 @@ profile.post("/api/profile/editPassword", validateJWT_MW, async (req, res) => {
             .end();
         return;
     }
+    console.log("Password reset requested, user id: " + res.locals.userId);
     if (body.newPassword !== body.reNewPassword) {
         res
             .status(400)

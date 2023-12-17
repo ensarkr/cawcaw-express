@@ -2,20 +2,17 @@ import "dotenv/config";
 import {
   followUserRequestBody,
   followUserResponseBody,
-  jwtBadResponse,
 } from "../../typings/http";
 import { createJWT } from "../../functions/jwt";
 import {
-  deleteTestUser,
-  deleteTestUser2,
+  deleteTestUsers,
   insertTestUser,
-  insertTestUser2,
+  insertSecondTestUser,
   testUserData,
-  testUserData2,
-  getTestUser2,
+  secondTestUser,
+  getSecondTestUser,
   getTestUser,
-  getAllFollowRelationsByTestUser,
-  deleteAddedFollowRelation,
+  getFollowRelationsOfTestUser,
   testHost,
 } from "../../functions/tests";
 import {
@@ -26,7 +23,7 @@ import {
 const mainUrl = testHost + "/action/follow";
 
 const requestBody: followUserRequestBody = {
-  targetId: testUserData2.id,
+  targetId: secondTestUser.id,
 };
 
 const requestOptions: RequestInit = {
@@ -49,13 +46,11 @@ describe("follow user", () => {
 
   beforeAll(async () => {
     await insertTestUser();
-    await insertTestUser2();
+    await insertSecondTestUser();
   });
 
   afterAll(async () => {
-    await deleteTestUser();
-    await deleteTestUser2();
-    await deleteAddedFollowRelation();
+    await deleteTestUsers();
   });
 
   checkJWT_TEST(mainUrl, requestOptions);
@@ -73,9 +68,9 @@ describe("follow user", () => {
 
     expect(body).toEqual(correctBody);
 
-    expect(await getAllFollowRelationsByTestUser()).toHaveLength(1);
+    expect(await getFollowRelationsOfTestUser()).toHaveLength(1);
     expect((await getTestUser()).following_count).toEqual(1);
-    expect((await getTestUser2()).followers_count).toEqual(1);
+    expect((await getSecondTestUser()).followers_count).toEqual(1);
   });
 
   test("follow second user again", async () => {

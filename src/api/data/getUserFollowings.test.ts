@@ -1,28 +1,20 @@
 import "dotenv/config";
+import { getPageQuery, getUsersResponse } from "../../typings/http";
 import {
-  getPostsQuery,
-  getUsersResponse,
-  searchPostsQuery,
-} from "../../typings/http";
-import {
-  addFollowRelation,
-  deletePrefilledUsers,
-  deleteTestUser,
-  deleteTestUser2,
-  insertPrefilledUsers,
+  addTestFollowRelation,
+  deleteTestUsers,
   insertTestUser,
-  insertTestUser2,
+  insertSecondTestUser,
   testHost,
   testUserData,
-  testUserData2,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
 import { checkQueries_TEST } from "../../functions/globalTests";
 
 const mainUrl = testHost + "/data/user/" + testUserData.id + "/followings";
 
-const requestQuery: getPostsQuery = {
-  endDate: new Date(Date.now() + 99999999999),
+const requestQuery: getPageQuery = {
+  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
   page: 0,
 };
 
@@ -35,13 +27,12 @@ const requestOptions: RequestInit = {
 describe("get user followings ", () => {
   beforeAll(async () => {
     await insertTestUser();
-    await insertTestUser2();
-    await addFollowRelation();
+    await insertSecondTestUser();
+    await addTestFollowRelation();
   });
 
   afterAll(async () => {
-    await deleteTestUser();
-    await deleteTestUser2();
+    await deleteTestUsers();
   });
 
   checkQueries_TEST(
@@ -55,7 +46,7 @@ describe("get user followings ", () => {
     returnURLWithQueries
   );
 
-  test("route responds correct 1st page", async () => {
+  test("route responds correct populated page", async () => {
     const response = await fetch(requestUrl, requestOptions);
 
     expect(response.status).toEqual(200);
@@ -70,7 +61,7 @@ describe("get user followings ", () => {
     expect(body.value.users).toHaveLength(1);
   });
 
-  test("route responds correct 2st page", async () => {
+  test("route responds correct non-existent page", async () => {
     const response = await fetch(
       returnURLWithQueries(mainUrl, {
         ...requestQuery,

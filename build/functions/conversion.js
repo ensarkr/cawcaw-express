@@ -63,7 +63,7 @@ function returnURLWithQueries(url, queryObject) {
         if (i != 0) {
             url += "&";
         }
-        url += keys[i] + "=" + queryObject[keys[i]];
+        url += keys[i] + "=" + encodeURIComponent(queryObject[keys[i]]);
     }
     return url;
 }

@@ -3,7 +3,7 @@ import "dotenv/config";
 import {
   getCommentsResponse,
   getPostResponse,
-  getPostsQuery,
+  getPageQuery,
   getPostsResponse,
   getUserResponse,
   getUsersResponse,
@@ -32,10 +32,17 @@ data.get(
   "/api/data/posts/explore",
   checkQueries_MW(["endDate", "page"]),
   async (req, res) => {
-    const queries: getPostsQuery = {
+    const queries: getPageQuery = {
       page: parseInt(req.query.page as string),
       endDate: new Date(req.query.endDate as string),
     };
+
+    console.log(
+      "Explore posts requested, endDate: " +
+        queries.endDate +
+        " page: " +
+        queries.page
+    );
 
     const dbResponse = await getLatestPosts(queries.endDate, queries.page);
 
@@ -65,10 +72,17 @@ data.get(
   validateJWT_MW,
   checkQueries_MW(["endDate", "page"]),
   async (req, res) => {
-    const queries: getPostsQuery = {
+    const queries: getPageQuery = {
       page: parseInt(req.query.page as string),
       endDate: new Date(req.query.endDate as string),
     };
+
+    console.log(
+      "Following posts requested, endDate: " +
+        queries.endDate +
+        " page: " +
+        queries.page
+    );
 
     const dbResponse = await getFollowingPosts(
       res.locals.userId,
@@ -107,6 +121,13 @@ data.get(
       searchQuery: req.query.searchQuery as string,
     };
 
+    console.log(
+      "Search posts requested, endDate: " +
+        queries.endDate +
+        " page: " +
+        queries.page
+    );
+
     const dbResponse = await searchPosts(
       queries.searchQuery,
       queries.endDate,
@@ -144,6 +165,13 @@ data.get(
       searchQuery: req.query.searchQuery as string,
     };
 
+    console.log(
+      "Search users requested, endDate: " +
+        queries.endDate +
+        " page: " +
+        queries.page
+    );
+
     const dbResponse = await searchUsers(
       queries.searchQuery,
       queries.endDate,
@@ -172,6 +200,8 @@ data.get(
 );
 
 data.get("/api/data/user/:id", async (req, res) => {
+  console.log("User requested, requested id: " + req.params.id);
+
   const dbResponse = await fetchPublicUser(parseInt(req.params.id));
 
   if (dbResponse.status) {
@@ -198,10 +228,19 @@ data.get(
   "/api/data/user/:id/followers",
   checkQueries_MW(["endDate", "page"]),
   async (req, res) => {
-    const queries: getPostsQuery = {
+    const queries: getPageQuery = {
       page: parseInt(req.query.page as string),
       endDate: new Date(req.query.endDate as string),
     };
+
+    console.log(
+      "Users followers requested, requested id: " +
+        req.params.id +
+        " endDate: " +
+        queries.endDate +
+        " page: " +
+        queries.page
+    );
 
     const dbResponse = await fetchUserFollowers(
       parseInt(req.params.id),
@@ -234,10 +273,19 @@ data.get(
   "/api/data/user/:id/followings",
   checkQueries_MW(["endDate", "page"]),
   async (req, res) => {
-    const queries: getPostsQuery = {
+    const queries: getPageQuery = {
       page: parseInt(req.query.page as string),
       endDate: new Date(req.query.endDate as string),
     };
+
+    console.log(
+      "Users followings requested, requested id: " +
+        req.params.id +
+        " endDate: " +
+        queries.endDate +
+        " page: " +
+        queries.page
+    );
 
     const dbResponse = await fetchUserFollowings(
       parseInt(req.params.id),
@@ -270,10 +318,19 @@ data.get(
   "/api/data/user/:id/posts",
   checkQueries_MW(["endDate", "page"]),
   async (req, res) => {
-    const queries: getPostsQuery = {
+    const queries: getPageQuery = {
       page: parseInt(req.query.page as string),
       endDate: new Date(req.query.endDate as string),
     };
+
+    console.log(
+      "Users posts requested, requested id: " +
+        req.params.id +
+        " endDate: " +
+        queries.endDate +
+        " page: " +
+        queries.page
+    );
 
     const dbResponse = await fetchUserPosts(
       parseInt(req.params.id),
@@ -306,10 +363,19 @@ data.get(
   "/api/data/user/:id/likes",
   checkQueries_MW(["endDate", "page"]),
   async (req, res) => {
-    const queries: getPostsQuery = {
+    const queries: getPageQuery = {
       page: parseInt(req.query.page as string),
       endDate: new Date(req.query.endDate as string),
     };
+
+    console.log(
+      "Users likes requested, requested id: " +
+        req.params.id +
+        " endDate: " +
+        queries.endDate +
+        " page: " +
+        queries.page
+    );
 
     const dbResponse = await fetchUserLikes(
       parseInt(req.params.id),
@@ -342,10 +408,19 @@ data.get(
   "/api/data/user/:id/comments",
   checkQueries_MW(["endDate", "page"]),
   async (req, res) => {
-    const queries: getPostsQuery = {
+    const queries: getPageQuery = {
       page: parseInt(req.query.page as string),
       endDate: new Date(req.query.endDate as string),
     };
+
+    console.log(
+      "Users comments requested, requested id: " +
+        req.params.id +
+        " endDate: " +
+        queries.endDate +
+        " page: " +
+        queries.page
+    );
 
     const dbResponse = await fetchUserComments(
       parseInt(req.params.id),
@@ -378,10 +453,19 @@ data.get(
   "/api/data/post/:id/comments",
   checkQueries_MW(["endDate", "page"]),
   async (req, res) => {
-    const queries: getPostsQuery = {
+    const queries: getPageQuery = {
       page: parseInt(req.query.page as string),
       endDate: new Date(req.query.endDate as string),
     };
+
+    console.log(
+      "Posts comments requested, requested id: " +
+        req.params.id +
+        " endDate: " +
+        queries.endDate +
+        " page: " +
+        queries.page
+    );
 
     const dbResponse = await fetchPostComments(
       parseInt(req.params.id),
@@ -412,6 +496,8 @@ data.get(
 
 data.get("/api/data/post/:id", async (req, res) => {
   const dbResponse = await fetchPost(parseInt(req.params.id));
+
+  console.log("Post requested, requested id: " + req.params.id);
 
   if (dbResponse.status) {
     res

@@ -1,24 +1,10 @@
 import "dotenv/config";
+import { getUserResponse } from "../../typings/http";
 import {
-  getPostsQuery,
-  getPostsResponse,
-  getUserResponse,
-  jwtBadResponse,
-} from "../../typings/http";
-import { createJWT } from "../../functions/jwt";
-import {
-  addFollowRelation,
-  deleteTestUser,
-  deleteTestUser2,
-  insertPostsByTestUser,
-  insertPostsByTestUser2,
+  deleteTestUsers,
   insertTestUser,
-  insertTestUser2,
   testHost,
-  testUserData,
-  testUserData2,
 } from "../../functions/tests";
-import { returnURLWithQueries } from "../../functions/conversion";
 
 const mainUrl = testHost + "/data/user";
 
@@ -32,7 +18,7 @@ describe("get public user", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
 
   test("get existing user", async () => {
@@ -49,7 +35,7 @@ describe("get public user", () => {
     expect(body.value.id).toBe(0);
   });
 
-  test("get non-existing user", async () => {
+  test("get non-existent user", async () => {
     const response = await fetch(mainUrl + "/1", requestOptions);
 
     expect(response.status).toEqual(400);

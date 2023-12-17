@@ -2,7 +2,7 @@ import "dotenv/config";
 import { signInRequestBody, signInResponseBody } from "../../typings/http";
 import { decodeJWTPayload } from "../../functions/jwt";
 import {
-  deleteTestUser,
+  deleteTestUserByUsername,
   insertTestUser,
   testHost,
   testUserData,
@@ -30,7 +30,7 @@ describe("sign in", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUserByUsername();
   });
 
   checkEmptyBody_TEST(mainUrl, requestOptions);

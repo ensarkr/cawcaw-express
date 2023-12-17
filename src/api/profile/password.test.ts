@@ -2,11 +2,10 @@ import "dotenv/config";
 import {
   editPasswordRequestBody,
   editPasswordResponseBody,
-  jwtBadResponse,
 } from "../../typings/http";
 import { createJWT } from "../../functions/jwt";
 import {
-  deleteTestUser,
+  deleteTestUsers,
   getTestUser,
   insertTestUser,
   testHost,
@@ -47,7 +46,7 @@ describe("edit password", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
 
   checkJWT_TEST(mainUrl, requestOptions);

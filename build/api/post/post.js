@@ -27,6 +27,7 @@ post.post("/api/post/create", validateJWT_MW, upload.single("image"), async (req
             .end();
         return;
     }
+    console.log("Post creation requested, user id: " + res.locals.userId);
     if (body.text.length > 250) {
         res
             .status(400)
@@ -131,6 +132,7 @@ post.post("/api/post/remove", validateJWT_MW, async (req, res) => {
             .end();
         return;
     }
+    console.log("Post deletion requested, user id: " + res.locals.userId);
     const dbResponse = await removePost(res.locals.userId, body.postId);
     if (dbResponse.status) {
         res.status(200).end();

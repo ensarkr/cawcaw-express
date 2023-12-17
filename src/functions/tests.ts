@@ -65,101 +65,104 @@ const testPostDatas: { text: string; image_url: string }[] = [
   },
 ];
 
+const secondTestUser = {
+  id: 1,
+  displayName: "test user 2",
+  username: "testUser2",
+  password: "strongPassword",
+  description: "description",
+};
+
 const testUserDatas: {
+  id: number;
   displayName: string;
   username: string;
   password: string;
   description: string;
 }[] = [
   {
-    displayName: "Cristina Aretha Test Maiya",
-    username: "meatylocationstudy",
-    password: "`6@`4j.,7",
+    displayName: "Othel test",
+    username: "teampotabledelivery",
+    password: "))&Xr}]5'M)L",
     description: "desc",
+    id: 2,
   },
   {
-    displayName: "Soloman Male",
-    username: "wife",
-    password: 'o2";3f9>}',
+    displayName: "Babymale Augustine Glynis",
+    username: "dreamitemShaquantour",
+    password: "9?#r@0\\5B2",
     description: "desc",
+    id: 3,
   },
   {
-    displayName: "Braulio",
-    username: "vacanttimelyrecord",
-    password: "E*0\\9!6F1",
+    displayName: "Cameron",
+    username: "speaker",
+    password: "-=,c5165#`+",
     description: "desc",
+    id: 4,
   },
   {
-    displayName: "Colin Zander Test Tommy",
-    username: "overcookedconclusion",
-    password: "S09Wg7i0f",
+    displayName: "Inger Fleming",
+    username: "AllanWarnetestrBirtieYancy",
+    password: "7E$=cm-Q0rc",
     description: "desc",
+    id: 5,
   },
   {
-    displayName: "Gaylen",
-    username: "EzekielLindaTorry",
-    password: "/2Sd14_;",
+    displayName: "Arnold Lissie",
+    username: "contentsettlementJagger",
+    password: "69G5kA<50,02",
     description: "desc",
+    id: 6,
   },
   {
-    displayName: "Illa Alvis Valerie",
-    username: "EdieentryAudley",
-    password: "W/)q~01*Q6",
+    displayName: "Betsey Jamila",
+    username: "Spencetestrrecordlanguagescene",
+    password: "S[g80:F.7:",
     description: "desc",
+    id: 7,
   },
   {
-    displayName: "Nico Shirlene Eden",
-    username: "Lenora",
-    password: "6533k-94@s",
+    displayName: "Nakisha test Alanzo",
+    username: "childArielTysonprotection",
+    password: "055-U39516i!",
     description: "desc",
+    id: 8,
   },
   {
-    displayName: "Alec Test Savilla",
-    username: "Aiyanabush",
-    password: ">Y4/^14Jf",
+    displayName: "Carole Telly Makena",
+    username: "teaAramintaKay",
+    password: "t*i2~^8~6",
     description: "desc",
+    id: 9,
   },
   {
-    displayName: "Teri",
-    username: "descriptionunselfishStacia",
-    password: ",eK3AI98",
+    displayName: "Brennan Tyrell Jacque",
+    username: "conflict",
+    password: "2.xq693I*",
     description: "desc",
+    id: 10,
   },
   {
-    displayName: "Estefani Dangelo Sheryl",
-    username: "amusingexchange",
-    password: "i'O6BT]3",
+    displayName: "Bridger test Storm Cinda",
+    username: "Sena",
+    password: "<N:1D0xy",
     description: "desc",
+    id: 11,
   },
   {
-    displayName: "Hertha Test Anjelica",
-    username: "Bobbiecrisisadorableluxurious",
-    password: "03:I?s).W$/B",
+    displayName: "Alphonsus",
+    username: "JermainLilyana",
+    password: "06770l$Z",
     description: "desc",
+    id: 12,
   },
   {
-    displayName: "Amil Ibrahim",
-    username: "offenceKarymegenuinealtruistic",
-    password: "qY[RN,IX`k",
+    displayName: "Marcela",
+    username: "restauranttestWillianunwritten",
+    password: "8Uw~&_3v4d&",
     description: "desc",
-  },
-  {
-    displayName: "Chanie",
-    username: "compassionateDoreneMichellmusic",
-    password: "(/q)aq06J01",
-    description: "desc",
-  },
-  {
-    displayName: "Viola test Terra",
-    username: "nightcultureCandis",
-    password: "&sn0[3B*,1",
-    description: "desc",
-  },
-  {
-    displayName: "Marjorie test Terell",
-    username: "radiantMelindaLesaisland",
-    password: "+eH/5SN+",
-    description: "desc",
+    id: 13,
   },
 ];
 
@@ -167,14 +170,6 @@ const testPostData = {
   id: 0,
   text: "post text",
   image_url: "description",
-};
-
-const testUserData2 = {
-  id: 1,
-  displayName: "test user2",
-  username: "testUser2",
-  password: "strongPassword2",
-  description: "description2",
 };
 
 async function insertTestUser() {
@@ -185,12 +180,13 @@ async function insertTestUser() {
     ${await bcrypt.hash(testUserData.password, 10)}) `;
 }
 
-async function deleteTestUser(condition?: string) {
-  if (condition === undefined) {
-    await sql`DELETE FROM cawcaw_users WHERE id = 0`;
-  } else {
-    await (sql`DELETE FROM cawcaw_users ` + condition);
-  }
+async function deleteTestUserByUsername() {
+  await sql`DELETE FROM cawcaw_users WHERE username = ${testUserData.username}`;
+}
+
+async function deleteTestUsers() {
+  // * first 13 users are reserved for tests
+  await sql`DELETE FROM cawcaw_users WHERE id < 14`;
 }
 
 async function getTestUser(useUsername?: boolean): Promise<user_DB> {
@@ -204,59 +200,40 @@ async function getTestUser(useUsername?: boolean): Promise<user_DB> {
   }
 }
 
-async function insertTestUser2() {
+async function insertSecondTestUser() {
   await sql`INSERT INTO cawcaw_users (id,username,display_name,hashed_password) 
-  VALUES (${testUserData2.id},
-    ${testUserData2.username}, 
-    ${testUserData2.displayName},
-    ${await bcrypt.hash(testUserData2.password, 10)}) `;
+  VALUES (${secondTestUser.id},
+    ${secondTestUser.username}, 
+    ${secondTestUser.displayName},
+    ${await bcrypt.hash(secondTestUser.password, 10)}) `;
 }
 
-async function deleteTestUser2(condition?: string) {
-  if (condition === undefined) {
-    await sql`DELETE FROM cawcaw_users WHERE id = ${testUserData2.id}`;
-  } else {
-    await (sql`DELETE FROM cawcaw_users ` + condition);
-  }
-}
-
-async function getTestUser2(useUsername?: boolean): Promise<user_DB> {
+async function getSecondTestUser(useUsername?: boolean): Promise<user_DB> {
   if (useUsername === undefined || useUsername === false) {
     return (
-      await sql`SELECT * FROM cawcaw_users WHERE id = ${testUserData2.id}`
+      await sql`SELECT * FROM cawcaw_users WHERE id = ${secondTestUser.id}`
     ).rows[0] as user_DB;
   } else {
     return (
-      await sql`SELECT * FROM cawcaw_users WHERE username = ${testUserData2.username}`
+      await sql`SELECT * FROM cawcaw_users WHERE username = ${secondTestUser.username}`
     ).rows[0] as user_DB;
   }
 }
 
-async function getAllFollowRelationsByTestUser(): Promise<followRelation_DB[]> {
+async function getFollowRelationsOfTestUser(): Promise<followRelation_DB[]> {
   return (
     await sql`SELECT * FROM cawcaw_follow_relation  WHERE user_id = ${testUserData.id}`
   ).rows as followRelation_DB[];
 }
 
-async function deleteAddedFollowRelation() {
-  await sql`DELETE FROM cawcaw_follow_relation
-   WHERE user_id = ${testUserData.id} AND follows_id = ${testUserData2.id}`;
-}
-
-async function addFollowRelation() {
+async function addTestFollowRelation() {
   await sql`INSERT INTO cawcaw_follow_relation (user_id,follows_id) VALUES 
-  (${testUserData.id} , ${testUserData2.id})`;
+  (${testUserData.id} , ${secondTestUser.id})`;
 }
 
-async function getPostsByTestUser(): Promise<post_DB[]> {
+async function getPostsOfTestUser(): Promise<post_DB[]> {
   return (
     await sql`SELECT * FROM cawcaw_posts WHERE user_id = ${testUserData.id}`
-  ).rows as post_DB[];
-}
-
-async function deleteAllPostsByTestUser(): Promise<post_DB[]> {
-  return (
-    await sql`DELETE FROM cawcaw_posts WHERE user_id = ${testUserData.id}`
   ).rows as post_DB[];
 }
 
@@ -272,34 +249,28 @@ async function insertPostsByTestUser(postCount: number) {
   }
 }
 
-async function insertPostsByTestUser2(postCount: number) {
+async function insertPostsBySecondTestUser(postCount: number) {
   for (let i = 0; i < postCount; i++) {
     await sql`INSERT INTO cawcaw_posts ( user_id, text)
-    VALUES ( ${testUserData2.id}, ${testPostData.text})`;
+    VALUES ( ${secondTestUser.id}, ${testPostData.text})`;
   }
 }
 
 async function insertPrefilledPostsByTestUser() {
   for (let i = 0; i < testPostDatas.length; i++) {
     await sql`INSERT INTO cawcaw_posts ( user_id, text,image_url)
-    VALUES ( ${testUserData.id}, ${testPostDatas[i].text},${testPostDatas[i].image_url})`;
+    VALUES (${testUserData.id}, ${testPostDatas[i].text},${testPostDatas[i].image_url})`;
   }
 }
 
-async function insertPrefilledUsers() {
+async function insertPrefilledTestUsers() {
   for (let i = 0; i < testUserDatas.length; i++) {
-    await sql`INSERT INTO cawcaw_users ( display_name,username,hashed_password,description )
-    VALUES ( ${testUserDatas[i].displayName}, ${testUserDatas[i].username},${testUserDatas[i].password},${testUserDatas[i].description})`;
+    await sql`INSERT INTO cawcaw_users ( id,display_name,username,hashed_password,description )
+    VALUES ( ${testUserDatas[i].id} ,${testUserDatas[i].displayName}, ${testUserDatas[i].username},${testUserDatas[i].password},${testUserDatas[i].description})`;
   }
 }
 
-async function deletePrefilledUsers() {
-  for (let i = 0; i < testUserDatas.length; i++) {
-    await sql`DELETE FROM cawcaw_users WHERE username = ${testUserDatas[i].username}`;
-  }
-}
-
-async function getAllPostLikesByTestUser(): Promise<postLikes_DB[]> {
+async function getPostLikesOfTestUser(): Promise<postLikes_DB[]> {
   return (
     await sql`SELECT * FROM cawcaw_post_likes  WHERE user_id = ${testUserData.id}`
   ).rows as postLikes_DB[];
@@ -312,7 +283,7 @@ async function addLikeByTestUser(): Promise<postLikes_DB[]> {
   ).rows as postLikes_DB[];
 }
 
-async function getAllCommentsByTestUser(): Promise<postComment_DB[]> {
+async function getAllCommentsOfTestUser(): Promise<postComment_DB[]> {
   return (
     await sql`SELECT * FROM cawcaw_post_comments WHERE user_id = ${testUserData.id}`
   ).rows as postComment_DB[];
@@ -327,28 +298,25 @@ async function insertCommentsByTestUser(commentCount: number) {
 
 export {
   insertTestUser,
-  deleteTestUser,
+  deleteTestUsers,
   getTestUser,
-  insertTestUser2,
-  deleteTestUser2,
-  getTestUser2,
+  insertSecondTestUser,
+  getSecondTestUser,
   testUserData,
-  testUserData2,
-  getAllFollowRelationsByTestUser,
-  deleteAddedFollowRelation,
-  addFollowRelation,
+  secondTestUser,
+  getFollowRelationsOfTestUser,
+  addTestFollowRelation,
   testHost,
-  getPostsByTestUser,
-  deleteAllPostsByTestUser,
+  getPostsOfTestUser,
   insertPostByTestUser,
   testPostData,
-  getAllPostLikesByTestUser,
-  getAllCommentsByTestUser,
+  getPostLikesOfTestUser,
+  getAllCommentsOfTestUser,
   insertPostsByTestUser,
-  insertPostsByTestUser2,
+  insertPostsBySecondTestUser,
   insertPrefilledPostsByTestUser,
-  insertPrefilledUsers,
-  deletePrefilledUsers,
+  insertPrefilledTestUsers,
   insertCommentsByTestUser,
   addLikeByTestUser,
+  deleteTestUserByUsername,
 };

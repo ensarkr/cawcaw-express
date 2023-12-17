@@ -20,6 +20,8 @@ import {
 } from "./conversion.js";
 import { getCommentsResponse, getPostsResponse } from "../typings/http.js";
 
+const logDatabaseError = true;
+
 async function createUser(
   displayName: string,
   username: string,
@@ -34,6 +36,7 @@ async function createUser(
 
     return { status: true };
   } catch (e) {
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: (e as Error).message.includes("duplicate key")
@@ -61,6 +64,7 @@ async function fetchUser(
 
     return { status: true, value: convertDatabaseUserToNormal(user) };
   } catch (e) {
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -81,7 +85,7 @@ async function updateUser(
 
     return { status: true };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: (e as Error).message.includes("duplicate key")
@@ -115,6 +119,7 @@ async function updatePassword(
 
     return { status: true };
   } catch (e) {
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -132,6 +137,7 @@ async function followUser(
 
     return { status: true };
   } catch (e) {
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: (e as Error).message.includes("duplicate")
@@ -150,7 +156,7 @@ async function unfollowUser(
 
     return { status: true };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -169,6 +175,7 @@ async function createPost(
 
     return { status: true };
   } catch (e) {
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -195,6 +202,7 @@ async function removePost(
 
     return { status: true };
   } catch (e) {
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -212,8 +220,7 @@ async function likePost(
 
     return { status: true };
   } catch (e) {
-    console.log(e);
-
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: (e as Error).message.includes("duplicate")
@@ -232,7 +239,7 @@ async function unlikePost(
 
     return { status: true };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -251,7 +258,7 @@ async function commentOnPost(
 
     return { status: true };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -287,7 +294,7 @@ async function getLatestPosts(
       },
     };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -329,7 +336,7 @@ async function getFollowingPosts(
       },
     };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -366,7 +373,7 @@ async function searchPosts(
       },
     };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -408,7 +415,7 @@ async function searchUsers(
       },
     };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -428,6 +435,7 @@ async function fetchPublicUser(userId: number): Promise<doubleReturn<user>> {
 
     return { status: true, value: convertDatabaseUserToNormal(user) };
   } catch (e) {
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -471,7 +479,7 @@ async function fetchUserFollowers(
       },
     };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -515,7 +523,7 @@ async function fetchUserFollowings(
       },
     };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -553,7 +561,7 @@ async function fetchUserPosts(
       },
     };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -594,7 +602,7 @@ async function fetchUserComments(
       },
     };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -642,7 +650,7 @@ async function fetchUserLikes(
       },
     };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -682,7 +690,7 @@ async function fetchPostComments(
       },
     };
   } catch (e) {
-    console.log(e);
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",
@@ -702,6 +710,7 @@ async function fetchPost(postId: number): Promise<doubleReturn<post>> {
 
     return { status: true, value: convertDatabasePostToNormal(post) };
   } catch (e) {
+    if (logDatabaseError) console.log(e);
     return {
       status: false,
       message: "Database error occurred.",

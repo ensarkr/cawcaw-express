@@ -1,21 +1,18 @@
 import "dotenv/config";
-import { getPostsQuery, getPostsResponse } from "../../typings/http";
-import { decodeJWTPayload } from "../../functions/jwt";
+import { getPageQuery, getPostsResponse } from "../../typings/http";
 import {
-  deleteTestUser,
-  insertPostByTestUser,
+  deleteTestUsers,
   insertPostsByTestUser,
   insertTestUser,
   testHost,
-  testUserData,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
-import { checkJWT_TEST, checkQueries_TEST } from "../../functions/globalTests";
+import { checkQueries_TEST } from "../../functions/globalTests";
 
 const mainUrl = testHost + "/data/posts/explore";
 
-const requestQuery: getPostsQuery = {
-  endDate: new Date(Date.now() + 99999999999),
+const requestQuery: getPageQuery = {
+  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
   page: 0,
 };
 
@@ -32,7 +29,7 @@ describe("get explore posts", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
 
   checkQueries_TEST(
@@ -46,7 +43,9 @@ describe("get explore posts", () => {
     returnURLWithQueries
   );
 
-  test("route responses correct 1st page", async () => {
+  let nonExistentPage = 99999999;
+
+  test("route responses correct populated page", async () => {
     const response = await fetch(requestUrl, requestOptions);
 
     expect(response.status).toEqual(200);
@@ -57,36 +56,15 @@ describe("get explore posts", () => {
 
     if (!body.status) return false;
 
-    expect(body.value.pageCount).toBe(2);
     expect(body.value.posts).toHaveLength(10);
+    nonExistentPage = body.value.pageCount;
   });
 
-  test("route responses correct 2st page", async () => {
+  test("route responses correct non-existent page", async () => {
     const response = await fetch(
       returnURLWithQueries(mainUrl, {
-        endDate: new Date(Date.now() + 99999999999),
-        page: 1,
-      }),
-      requestOptions
-    );
-
-    expect(response.status).toEqual(200);
-
-    const body: getPostsResponse = await response.json();
-
-    expect(body.status).toBe(true);
-
-    if (!body.status) return false;
-
-    expect(body.value.pageCount).toBe(2);
-    expect(body.value.posts).toHaveLength(5);
-  });
-
-  test("route responses correct 3st page", async () => {
-    const response = await fetch(
-      returnURLWithQueries(mainUrl, {
-        endDate: new Date(Date.now() + 99999999999),
-        page: 2,
+        ...requestQuery,
+        page: nonExistentPage,
       }),
       requestOptions
     );

@@ -17,6 +17,7 @@ action.post("/api/action/follow", validateJWT_MW, async (req, res) => {
             .end();
         return;
     }
+    console.log("Follow action requested, userId: " + res.locals.userId);
     const dbResponse = await followUser(res.locals.userId, body.targetId);
     if (dbResponse.status) {
         res
@@ -49,6 +50,7 @@ action.post("/api/action/unfollow", validateJWT_MW, async (req, res) => {
             .end();
         return;
     }
+    console.log("Unfollow action requested, userId: " + res.locals.userId);
     const dbResponse = await unfollowUser(res.locals.userId, body.targetId);
     if (dbResponse.status) {
         res
@@ -81,6 +83,7 @@ action.post("/api/action/like", validateJWT_MW, async (req, res) => {
             .end();
         return;
     }
+    console.log("Like action requested, userId: " + res.locals.userId);
     const dbResponse = await likePost(res.locals.userId, body.postId);
     if (dbResponse.status) {
         res
@@ -113,6 +116,7 @@ action.post("/api/action/unlike", validateJWT_MW, async (req, res) => {
             .end();
         return;
     }
+    console.log("Unlike action requested, userId: " + res.locals.userId);
     const dbResponse = await unlikePost(res.locals.userId, body.postId);
     if (dbResponse.status) {
         res
@@ -145,6 +149,7 @@ action.post("/api/action/comment", validateJWT_MW, async (req, res) => {
             .end();
         return;
     }
+    console.log("Comment action requested, userId: " + res.locals.userId);
     if (body.comment.length > 180) {
         res
             .status(400)

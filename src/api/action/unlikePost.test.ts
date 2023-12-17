@@ -6,13 +6,13 @@ import {
 } from "../../typings/http";
 import { createJWT } from "../../functions/jwt";
 import {
-  deleteTestUser,
+  deleteTestUsers,
   insertTestUser,
   testUserData,
   testHost,
   testPostData,
-  getPostsByTestUser,
-  getAllPostLikesByTestUser,
+  getPostsOfTestUser,
+  getPostLikesOfTestUser,
   insertPostByTestUser,
 } from "../../functions/tests";
 import {
@@ -46,7 +46,7 @@ describe("unlike post", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
   
   checkJWT_TEST(mainUrl, requestOptions);
@@ -57,9 +57,9 @@ describe("unlike post", () => {
 
     expect(response.status).toEqual(200);
 
-    const posts = await getPostsByTestUser();
+    const posts = await getPostsOfTestUser();
 
     expect(posts[0].likes_count).toEqual(0);
-    expect(await getAllPostLikesByTestUser()).toHaveLength(0);
+    expect(await getPostLikesOfTestUser()).toHaveLength(0);
   });
 });

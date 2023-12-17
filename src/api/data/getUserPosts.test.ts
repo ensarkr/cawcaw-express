@@ -1,30 +1,22 @@
 import "dotenv/config";
 import {
-  getPostsQuery,
+  getPageQuery,
   getPostsResponse,
-  searchPostsQuery,
 } from "../../typings/http";
 import {
-  addFollowRelation,
-  deletePrefilledUsers,
-  deleteTestUser,
-  deleteTestUser2,
-  insertPostByTestUser,
+  deleteTestUsers,
   insertPostsByTestUser,
-  insertPrefilledUsers,
   insertTestUser,
-  insertTestUser2,
   testHost,
   testUserData,
-  testUserData2,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
 import { checkQueries_TEST } from "../../functions/globalTests";
 
 const mainUrl = testHost + "/data/user/" + testUserData.id + "/posts";
 
-const requestQuery: getPostsQuery = {
-  endDate: new Date(Date.now() + 99999999999),
+const requestQuery: getPageQuery = {
+  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
   page: 0,
 };
 
@@ -41,7 +33,7 @@ describe("get user posts ", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
 
   checkQueries_TEST(
@@ -55,7 +47,7 @@ describe("get user posts ", () => {
     returnURLWithQueries
   );
 
-  test("route responds correct 1st page", async () => {
+  test("route responds correct populated page", async () => {
     const response = await fetch(requestUrl, requestOptions);
 
     expect(response.status).toEqual(200);
@@ -70,7 +62,7 @@ describe("get user posts ", () => {
     expect(body.value.posts).toHaveLength(5);
   });
 
-  test("route responds correct 2st page", async () => {
+  test("route responds correct non-existent page", async () => {
     const response = await fetch(
       returnURLWithQueries(mainUrl, {
         ...requestQuery,

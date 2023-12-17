@@ -2,11 +2,10 @@ import "dotenv/config";
 import {
   editProfileRequestBody,
   editProfileResponseBody,
-  jwtBadResponse,
 } from "../../typings/http";
 import { createJWT, decodeJWTPayload } from "../../functions/jwt";
 import {
-  deleteTestUser,
+  deleteTestUsers,
   getTestUser,
   insertTestUser,
   testUserData,
@@ -46,7 +45,7 @@ describe("edit profile", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
 
   checkJWT_TEST(mainUrl, requestOptions);

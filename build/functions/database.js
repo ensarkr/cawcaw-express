@@ -2,6 +2,7 @@ import "dotenv/config";
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
 import { convertDatabaseCommentsToNormal, convertDatabasePostToNormal, convertDatabasePostsToNormal, convertDatabaseUserToNormal, convertDatabaseUsersToPartial, convertDateToDatabase, } from "./conversion.js";
+const logDatabaseError = true;
 async function createUser(displayName, username, password) {
     try {
         await sql `INSERT INTO cawcaw_users (display_name, username, hashed_password,description) 
@@ -9,6 +10,8 @@ async function createUser(displayName, username, password) {
         return { status: true };
     }
     catch (e) {
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: e.message.includes("duplicate key")
@@ -28,6 +31,8 @@ async function fetchUser(username, password) {
         return { status: true, value: convertDatabaseUserToNormal(user) };
     }
     catch (e) {
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -42,7 +47,8 @@ async function updateUser(userId, displayName, username, description) {
         return { status: true };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: e.message.includes("duplicate key")
@@ -63,6 +69,8 @@ async function updatePassword(userId, oldPassword, newPassword) {
         return { status: true };
     }
     catch (e) {
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -76,6 +84,8 @@ async function followUser(userId, targetId) {
         return { status: true };
     }
     catch (e) {
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: e.message.includes("duplicate")
@@ -90,7 +100,8 @@ async function unfollowUser(userId, targetId) {
         return { status: true };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -104,6 +115,8 @@ async function createPost(userId, text, imageUrl) {
         return { status: true };
     }
     catch (e) {
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -123,6 +136,8 @@ async function removePost(userId, postId) {
         return { status: true };
     }
     catch (e) {
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -136,7 +151,8 @@ async function likePost(userId, postId) {
         return { status: true };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: e.message.includes("duplicate")
@@ -151,7 +167,8 @@ async function unlikePost(userId, postId) {
         return { status: true };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -165,7 +182,8 @@ async function commentOnPost(userId, postId, comment) {
         return { status: true };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -193,7 +211,8 @@ async function getLatestPosts(date, page) {
         };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -227,7 +246,8 @@ async function getFollowingPosts(userId, date, page) {
         };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -256,7 +276,8 @@ async function searchPosts(searchQuery, date, page) {
         };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -285,7 +306,8 @@ async function searchUsers(searchQuery, date, page) {
         };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -301,6 +323,8 @@ async function fetchPublicUser(userId) {
         return { status: true, value: convertDatabaseUserToNormal(user) };
     }
     catch (e) {
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -331,7 +355,8 @@ async function fetchUserFollowers(userId, date, page) {
         };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -362,7 +387,8 @@ async function fetchUserFollowings(userId, date, page) {
         };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -390,7 +416,8 @@ async function fetchUserPosts(userId, date, page) {
         };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -418,7 +445,8 @@ async function fetchUserComments(userId, date, page) {
         };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -458,7 +486,8 @@ async function fetchUserLikes(userId, date, page) {
         };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -488,7 +517,8 @@ async function fetchPostComments(postId, date, page) {
         };
     }
     catch (e) {
-        console.log(e);
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",
@@ -504,6 +534,8 @@ async function fetchPost(postId) {
         return { status: true, value: convertDatabasePostToNormal(post) };
     }
     catch (e) {
+        if (logDatabaseError)
+            console.log(e);
         return {
             status: false,
             message: "Database error occurred.",

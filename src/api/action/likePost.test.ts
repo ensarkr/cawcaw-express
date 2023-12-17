@@ -6,13 +6,13 @@ import {
 } from "../../typings/http";
 import { createJWT } from "../../functions/jwt";
 import {
-  deleteTestUser,
+  deleteTestUsers,
   insertTestUser,
   testUserData,
   testHost,
   testPostData,
-  getPostsByTestUser,
-  getAllPostLikesByTestUser,
+  getPostsOfTestUser,
+  getPostLikesOfTestUser,
   insertPostByTestUser,
 } from "../../functions/tests";
 import {
@@ -46,7 +46,7 @@ describe("like post", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
   checkJWT_TEST(mainUrl, requestOptions);
   checkEmptyBody_TEST(mainUrl, requestOptions);
@@ -56,10 +56,10 @@ describe("like post", () => {
 
     expect(response.status).toEqual(200);
 
-    const posts = await getPostsByTestUser();
+    const posts = await getPostsOfTestUser();
 
     expect(posts[0].likes_count).toEqual(1);
-    expect(await getAllPostLikesByTestUser()).toHaveLength(1);
+    expect(await getPostLikesOfTestUser()).toHaveLength(1);
   });
 
   test("like again", async () => {

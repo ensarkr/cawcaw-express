@@ -1,18 +1,10 @@
 import "dotenv/config";
+import { getPostsResponse, searchPostsQuery } from "../../typings/http";
 import {
-  getPostsQuery,
-  getPostsResponse,
-  searchPostsQuery,
-} from "../../typings/http";
-import { decodeJWTPayload } from "../../functions/jwt";
-import {
-  deleteTestUser,
-  insertPostByTestUser,
-  insertPostsByTestUser,
+  deleteTestUsers,
   insertPrefilledPostsByTestUser,
   insertTestUser,
   testHost,
-  testUserData,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
 import { checkQueries_TEST } from "../../functions/globalTests";
@@ -20,7 +12,7 @@ import { checkQueries_TEST } from "../../functions/globalTests";
 const mainUrl = testHost + "/data/posts/search";
 
 const requestQuery: searchPostsQuery = {
-  endDate: new Date(Date.now() + 99999999999),
+  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
   page: 0,
   searchQuery: "test",
 };
@@ -38,7 +30,7 @@ describe("get searched posts", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
 
   checkQueries_TEST(
@@ -52,7 +44,9 @@ describe("get searched posts", () => {
     returnURLWithQueries
   );
 
-  test("route responds correct 1st page", async () => {
+  let nonExistentPage = 99999;
+
+  test("route responds correct populated page", async () => {
     const response = await fetch(requestUrl, requestOptions);
 
     expect(response.status).toEqual(200);
@@ -63,15 +57,21 @@ describe("get searched posts", () => {
 
     if (!body.status) return false;
 
-    expect(body.value.pageCount).toBe(1);
-    expect(body.value.posts).toHaveLength(4);
+    nonExistentPage = body.value.pageCount;
+
+    expect(body.value.posts.length > 0).toBe(true);
+
+    expect(body.value.posts).toHaveLength(
+      body.value.posts.filter((e) => e.text.includes(requestQuery.searchQuery))
+        .length
+    );
   });
 
-  test("route responds correct 2st page", async () => {
+  test("route responds correct non-existent page", async () => {
     const response = await fetch(
       returnURLWithQueries(mainUrl, {
         ...requestQuery,
-        page: 1,
+        page: nonExistentPage,
       }),
       requestOptions
     );

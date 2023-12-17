@@ -1,13 +1,12 @@
 import "dotenv/config";
 import {
-  jwtBadResponse,
   removePostRequestBody,
   removePostResponseBody,
 } from "../../typings/http";
 import { createJWT } from "../../functions/jwt";
 import {
-  deleteTestUser,
-  getPostsByTestUser,
+  deleteTestUsers,
+  getPostsOfTestUser,
   insertTestUser,
   testUserData,
   testHost,
@@ -45,14 +44,14 @@ describe("remove post", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
 
   checkJWT_TEST(mainUrl, requestOptions);
   checkEmptyBody_TEST(mainUrl, requestOptions);
 
   test("remove post", async () => {
-    let posts = await getPostsByTestUser();
+    let posts = await getPostsOfTestUser();
 
     expect(posts).toHaveLength(1);
 
@@ -60,7 +59,7 @@ describe("remove post", () => {
 
     expect(response.status).toEqual(200);
 
-    posts = await getPostsByTestUser();
+    posts = await getPostsOfTestUser();
 
     expect(posts).toHaveLength(0);
   });

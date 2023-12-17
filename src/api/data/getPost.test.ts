@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { getPostResponse } from "../../typings/http";
 import {
-  deleteTestUser,
+  deleteTestUsers,
   insertPostByTestUser,
   insertTestUser,
   testHost,
@@ -20,7 +20,7 @@ describe("get post", () => {
   });
 
   afterAll(async () => {
-    await deleteTestUser();
+    await deleteTestUsers();
   });
 
   test("get existing post", async () => {

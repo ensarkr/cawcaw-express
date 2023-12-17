@@ -89,7 +89,7 @@ function returnURLWithQueries(url: string, queryObject: Record<string, any>) {
       url += "&";
     }
 
-    url += keys[i] + "=" + queryObject[keys[i]];
+    url += keys[i] + "=" + encodeURIComponent(queryObject[keys[i]]);
   }
 
   return url;
