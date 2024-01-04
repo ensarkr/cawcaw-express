@@ -68,6 +68,7 @@ post.post(
     }
 
     let fileUrl: string | null = null;
+    let aspectRatio: number | null = null;
 
     if (req.file) {
       if (
@@ -96,11 +97,13 @@ post.post(
 
       const webpBuffer = await sharp(req.file?.buffer)
         .webp({ quality: 100 })
-        .toBuffer();
+        .toBuffer({ resolveWithObject: true });
+
+      aspectRatio = webpBuffer.info.width / webpBuffer.info.height;
 
       const dataStream = new Readable();
       dataStream._read = () => {};
-      dataStream.push(webpBuffer);
+      dataStream.push(webpBuffer.data);
       dataStream.push(null);
 
       const uploadResult: doubleReturn<string> = await new Promise(
@@ -134,10 +137,18 @@ post.post(
       }
     }
 
-    const dbResponse = await createPost(res.locals.userId, body.text, fileUrl);
+    const dbResponse = await createPost(
+      res.locals.userId,
+      body.text,
+      fileUrl,
+      aspectRatio
+    );
 
     if (dbResponse.status) {
-      res.status(200).end();
+      res
+        .status(200)
+        .json(dbResponse as createPostResponseBody)
+        .end();
       return;
     } else {
       res

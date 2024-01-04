@@ -1,20 +1,33 @@
 import "dotenv/config";
 import { getUserResponse } from "../../typings/http";
 import {
+  addTestFollowRelation,
   deleteTestUsers,
+  insertSecondTestUser,
   insertTestUser,
   testHost,
+  testUserData,
 } from "../../functions/tests";
+import { createJWT } from "../../functions/jwt";
 
 const mainUrl = testHost + "/data/user";
 
 const requestOptions: RequestInit = {
   method: "GET",
+  headers: {
+    authorization: createJWT({
+      id: testUserData.id,
+      username: testUserData.username,
+      displayName: testUserData.displayName,
+    }),
+  },
 };
 
 describe("get public user", () => {
   beforeAll(async () => {
     await insertTestUser();
+    await insertSecondTestUser();
+    await addTestFollowRelation();
   });
 
   afterAll(async () => {
@@ -22,7 +35,7 @@ describe("get public user", () => {
   });
 
   test("get existing user", async () => {
-    const response = await fetch(mainUrl + "/0", requestOptions);
+    const response = await fetch(mainUrl + "/1", requestOptions);
 
     expect(response.status).toEqual(200);
 
@@ -30,13 +43,17 @@ describe("get public user", () => {
 
     expect(body.status).toBe(true);
 
-    if (!body.status) return false;
+    if (!body.status) {
+      throw "Status is wrong";
+    }
 
-    expect(body.value.id).toBe(0);
+    expect(body.value.id).toBe(1);
+    expect(body.value.requestedFollows).toBe(true);
+    expect(body.value.followersCount).toBe(1);
   });
 
   test("get non-existent user", async () => {
-    const response = await fetch(mainUrl + "/1", requestOptions);
+    const response = await fetch(mainUrl + "/2", requestOptions);
 
     expect(response.status).toEqual(400);
 

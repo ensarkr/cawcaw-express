@@ -59,7 +59,9 @@ describe("get user comments ", () => {
 
     expect(body.status).toBe(true);
 
-    if (!body.status) return false;
+    if (!body.status) {
+      throw "Status is wrong";
+    }
 
     expect(body.value.pageCount).toBe(1);
     expect(body.value.comments).toHaveLength(5);

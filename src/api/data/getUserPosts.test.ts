@@ -1,17 +1,19 @@
 import "dotenv/config";
+import { getPageQuery, getPostsResponse } from "../../typings/http";
 import {
-  getPageQuery,
-  getPostsResponse,
-} from "../../typings/http";
-import {
+  addLikeByTestUser,
   deleteTestUsers,
+  insertPostByTestUser,
+  insertPostsBySecondTestUser,
   insertPostsByTestUser,
+  insertSecondTestUser,
   insertTestUser,
   testHost,
   testUserData,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
 import { checkQueries_TEST } from "../../functions/globalTests";
+import { createJWT } from "../../functions/jwt";
 
 const mainUrl = testHost + "/data/user/" + testUserData.id + "/posts";
 
@@ -24,12 +26,23 @@ const requestUrl = returnURLWithQueries(mainUrl, requestQuery);
 
 const requestOptions: RequestInit = {
   method: "GET",
+  headers: {
+    authorization: createJWT({
+      id: testUserData.id,
+      username: testUserData.username,
+      displayName: testUserData.displayName,
+    }),
+  },
 };
 
 describe("get user posts ", () => {
   beforeAll(async () => {
     await insertTestUser();
-    await insertPostsByTestUser(5);
+    await insertSecondTestUser();
+    await insertPostsByTestUser(4);
+    await insertPostByTestUser();
+    await insertPostsBySecondTestUser(5);
+    await addLikeByTestUser();
   });
 
   afterAll(async () => {
@@ -56,10 +69,14 @@ describe("get user posts ", () => {
 
     expect(body.status).toBe(true);
 
-    if (!body.status) return false;
+    if (!body.status) {
+      throw "Status is wrong";
+    }
 
     expect(body.value.pageCount).toBe(1);
     expect(body.value.posts).toHaveLength(5);
+    expect(body.value.posts[0].requestedLiked).toBe(true);
+    expect(body.value.posts[0].username).toBe(testUserData.username);
   });
 
   test("route responds correct non-existent page", async () => {

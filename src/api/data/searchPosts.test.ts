@@ -55,7 +55,9 @@ describe("get searched posts", () => {
 
     expect(body.status).toBe(true);
 
-    if (!body.status) return false;
+    if (!body.status) {
+      throw "Status is wrong";
+    }
 
     nonExistentPage = body.value.pageCount;
 

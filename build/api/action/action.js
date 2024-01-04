@@ -149,7 +149,10 @@ action.post("/api/action/comment", validateJWT_MW, async (req, res) => {
             .end();
         return;
     }
-    console.log("Comment action requested, userId: " + res.locals.userId);
+    console.log("Comment action requested, userId: " +
+        res.locals.userId +
+        " date: " +
+        new Date().toISOString());
     if (body.comment.length > 180) {
         res
             .status(400)

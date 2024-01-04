@@ -195,6 +195,10 @@ async function addTestFollowRelation() {
     await sql `INSERT INTO cawcaw_follow_relation (user_id,follows_id) VALUES 
   (${testUserData.id} , ${secondTestUser.id})`;
 }
+async function addTestFollowItself() {
+    await sql `INSERT INTO cawcaw_follow_relation (user_id,follows_id) VALUES 
+  (${testUserData.id} , ${testUserData.id})`;
+}
 async function getPostsOfTestUser() {
     return (await sql `SELECT * FROM cawcaw_posts WHERE user_id = ${testUserData.id}`).rows;
 }
@@ -242,4 +246,4 @@ async function insertCommentsByTestUser(commentCount) {
     VALUES (${testUserData.id} ,${testPostData.id}, ${testPostData.text})`;
     }
 }
-export { insertTestUser, deleteTestUsers, getTestUser, insertSecondTestUser, getSecondTestUser, testUserData, secondTestUser, getFollowRelationsOfTestUser, addTestFollowRelation, testHost, getPostsOfTestUser, insertPostByTestUser, testPostData, getPostLikesOfTestUser, getAllCommentsOfTestUser, insertPostsByTestUser, insertPostsBySecondTestUser, insertPrefilledPostsByTestUser, insertPrefilledTestUsers, insertCommentsByTestUser, addLikeByTestUser, deleteTestUserByUsername, };
+export { insertTestUser, deleteTestUsers, getTestUser, insertSecondTestUser, getSecondTestUser, testUserData, secondTestUser, getFollowRelationsOfTestUser, addTestFollowRelation, testHost, getPostsOfTestUser, insertPostByTestUser, testPostData, getPostLikesOfTestUser, getAllCommentsOfTestUser, insertPostsByTestUser, insertPostsBySecondTestUser, insertPrefilledPostsByTestUser, insertPrefilledTestUsers, insertCommentsByTestUser, addLikeByTestUser, deleteTestUserByUsername, addTestFollowItself, };

@@ -4,7 +4,7 @@ import crypto from "crypto";
 
 function createJWT(user: userPartial) {
   // * 2 months
-  const expirationTimeInMS = 60 * 60 * 24 * 60;
+  const expirationTimeInMS = 1000 * 60 * 60 * 24 * 60;
 
   const issuer = "express";
   const subject = user.username;

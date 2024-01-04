@@ -62,7 +62,7 @@ type createPostRequestBody = {
   isThereAnImage: "yes" | "no";
 };
 
-type createPostResponseBody = doubleReturn<undefined> & action;
+type createPostResponseBody = doubleReturn<{ postId: number }> & action;
 
 type removePostRequestBody = {
   postId: number;
@@ -87,7 +87,7 @@ type commentOnPostRequestBody = {
   comment: string;
 };
 
-type commentOnPostResponseBody = doubleReturn<undefined> & action;
+type commentOnPostResponseBody = doubleReturn<postComment> & action;
 
 // * GET
 
@@ -109,7 +109,7 @@ type searchUsersQuery = {
 } & getPageQuery;
 
 type getUsersResponse = doubleReturn<{
-  users: userPartial[];
+  users: user[];
   pageCount: number;
 }> &
   action;

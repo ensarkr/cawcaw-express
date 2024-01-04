@@ -4,12 +4,15 @@ import {
   addLikeByTestUser,
   deleteTestUsers,
   insertPostByTestUser,
+  insertPostsBySecondTestUser,
   insertTestUser,
+  secondTestUser,
   testHost,
   testUserData,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
 import { checkQueries_TEST } from "../../functions/globalTests";
+import { createJWT } from "../../functions/jwt";
 
 const mainUrl = testHost + "/data/user/" + testUserData.id + "/likes";
 
@@ -22,6 +25,13 @@ const requestUrl = returnURLWithQueries(mainUrl, requestQuery);
 
 const requestOptions: RequestInit = {
   method: "GET",
+  headers: {
+    authorization: createJWT({
+      id: secondTestUser.id,
+      username: secondTestUser.username,
+      displayName: secondTestUser.displayName,
+    }),
+  },
 };
 
 describe("get user likes ", () => {
@@ -55,10 +65,13 @@ describe("get user likes ", () => {
 
     expect(body.status).toBe(true);
 
-    if (!body.status) return false;
+    if (!body.status) {
+      throw "Status is wrong";
+    }
 
     expect(body.value.pageCount).toBe(1);
     expect(body.value.posts).toHaveLength(1);
+    expect(body.value.posts[0].likesCount).toBe(1);
   });
 
   test("route responds correct non-existent page", async () => {

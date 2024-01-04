@@ -6,7 +6,15 @@ function convertDatabaseUserToNormal(user) {
         description: user.description,
         followersCount: user.followers_count,
         followingCount: user.following_count,
+        requestedFollows: user.requested_follows !== undefined ? user.requested_follows : false,
     };
+}
+function convertDatabaseUsersToNormal(users) {
+    const resultArray = [];
+    for (let i = 0; i < users.length; i++) {
+        resultArray.push(convertDatabaseUserToNormal(users[i]));
+    }
+    return resultArray;
 }
 function convertDatabaseUsersToPartial(users) {
     const resultArray = [];
@@ -25,9 +33,13 @@ function convertDatabasePostToNormal(post) {
         userId: post.user_id,
         text: post.text,
         imageUrl: post.image_url,
+        aspectRatio: post.aspect_ratio,
         likesCount: post.likes_count,
         commentsCount: post.comments_count,
         insertedAt: new Date(post.inserted_at),
+        displayName: post.display_name,
+        username: post.username,
+        requestedLiked: post.requested_liked !== undefined ? post.requested_liked : false,
     };
 }
 function convertDatabasePostsToNormal(posts) {
@@ -44,6 +56,8 @@ function convertDatabaseCommentToNormal(comment) {
         postId: comment.post_id,
         comment: comment.comment,
         insertedAt: new Date(comment.inserted_at),
+        displayName: comment.display_name,
+        username: comment.username,
     };
 }
 function convertDatabaseCommentsToNormal(comments) {
@@ -54,7 +68,7 @@ function convertDatabaseCommentsToNormal(comments) {
     return resultArray;
 }
 function convertDateToDatabase(date) {
-    return date.toISOString().split("T")[0];
+    return date.toISOString().replace("T", " ").slice(0, -1).concat("999");
 }
 function returnURLWithQueries(url, queryObject) {
     const keys = Object.keys(queryObject);
@@ -67,4 +81,4 @@ function returnURLWithQueries(url, queryObject) {
     }
     return url;
 }
-export { convertDatabaseUserToNormal, convertDatabasePostToNormal, convertDateToDatabase, returnURLWithQueries, convertDatabasePostsToNormal, convertDatabaseUsersToPartial, convertDatabaseCommentsToNormal, };
+export { convertDatabaseUserToNormal, convertDatabasePostToNormal, convertDateToDatabase, returnURLWithQueries, convertDatabasePostsToNormal, convertDatabaseUsersToPartial, convertDatabaseCommentsToNormal, convertDatabaseUsersToNormal, };

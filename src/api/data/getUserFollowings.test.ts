@@ -7,9 +7,12 @@ import {
   insertSecondTestUser,
   testHost,
   testUserData,
+  addTestFollowItself,
+  secondTestUser,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
 import { checkQueries_TEST } from "../../functions/globalTests";
+import { createJWT } from "../../functions/jwt";
 
 const mainUrl = testHost + "/data/user/" + testUserData.id + "/followings";
 
@@ -22,6 +25,13 @@ const requestUrl = returnURLWithQueries(mainUrl, requestQuery);
 
 const requestOptions: RequestInit = {
   method: "GET",
+  headers: {
+    authorization: createJWT({
+      id: testUserData.id,
+      username: testUserData.username,
+      displayName: testUserData.displayName,
+    }),
+  },
 };
 
 describe("get user followings ", () => {
@@ -29,6 +39,7 @@ describe("get user followings ", () => {
     await insertTestUser();
     await insertSecondTestUser();
     await addTestFollowRelation();
+    await addTestFollowItself();
   });
 
   afterAll(async () => {
@@ -55,10 +66,14 @@ describe("get user followings ", () => {
 
     expect(body.status).toBe(true);
 
-    if (!body.status) return false;
+    if (!body.status) {
+      throw "Status is wrong";
+    }
 
     expect(body.value.pageCount).toBe(1);
-    expect(body.value.users).toHaveLength(1);
+    expect(body.value.users).toHaveLength(2);
+    expect(body.value.users[1].username).toBe(secondTestUser.username);
+    expect(body.value.users[1].requestedFollows).toBe(true);
   });
 
   test("route responds correct non-existent page", async () => {

@@ -32,9 +32,13 @@ describe("get post", () => {
 
     expect(body.status).toBe(true);
 
-    if (!body.status) return false;
+    if (!body.status) {
+      throw "Status is wrong";
+    }
 
     expect(body.value.id).toBe(0);
+    expect(typeof body.value.username).toBe("string");
+    expect(typeof body.value.requestedLiked).toBe("boolean");
   });
 
   test("get non-existing post", async () => {

@@ -98,7 +98,9 @@ describe("edit password", () => {
 
     expect(response.status).toEqual(200);
 
-    if (!body.status) return false;
+       if (!body.status) {
+      throw "Status is wrong";
+    }
 
     expect(
       await bcrypt.compare(

@@ -71,21 +71,24 @@ describe("get following users posts", () => {
 
     expect(body.status).toBe(true);
 
-    if (!body.status) return false;
+    if (!body.status) {
+      throw "Status is wrong";
+    }
 
     expect(body.value.posts).toHaveLength(10);
-    nonExistentPage = body.value.pageCount;
-
     expect(
       body.value.posts.filter((e) => e.userId === secondTestUser.id)
     ).toHaveLength(10);
+    expect(typeof body.value.posts[0].username).toBe("string");
+    expect(typeof body.value.posts[0].requestedLiked).toBe("boolean");
+    nonExistentPage = body.value.pageCount;
   });
 
   test("route responses correct nonExistentPage page", async () => {
     const response = await fetch(
       returnURLWithQueries(mainUrl, {
         ...requestQuery,
-        page: 2,
+        page: nonExistentPage,
       }),
       requestOptions
     );

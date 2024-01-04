@@ -1,10 +1,10 @@
 import express from "express";
 import "dotenv/config";
 import { fetchPost, fetchPostComments, fetchPublicUser, fetchUserComments, fetchUserFollowers, fetchUserFollowings, fetchUserLikes, fetchUserPosts, getFollowingPosts, getLatestPosts, searchPosts, searchUsers, } from "../../functions/database.js";
-import { validateJWT_MW } from "../../middlewares/jwt.js";
+import { validateJWTPassThrough_MW, validateJWT_MW, } from "../../middlewares/jwt.js";
 import { checkQueries_MW } from "../../middlewares/checkQueries.js";
 const data = express();
-data.get("/api/data/posts/explore", checkQueries_MW(["endDate", "page"]), async (req, res) => {
+data.get("/api/data/posts/explore", validateJWTPassThrough_MW, checkQueries_MW(["endDate", "page"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -13,7 +13,7 @@ data.get("/api/data/posts/explore", checkQueries_MW(["endDate", "page"]), async 
         queries.endDate +
         " page: " +
         queries.page);
-    const dbResponse = await getLatestPosts(queries.endDate, queries.page);
+    const dbResponse = await getLatestPosts(queries.endDate, queries.page, res.locals.userId);
     if (dbResponse.status) {
         res
             .status(200)
@@ -126,9 +126,9 @@ data.get("/api/data/users/search", checkQueries_MW(["endDate", "page", "searchQu
     }
     return;
 });
-data.get("/api/data/user/:id", async (req, res) => {
+data.get("/api/data/user/:id", validateJWTPassThrough_MW, async (req, res) => {
     console.log("User requested, requested id: " + req.params.id);
-    const dbResponse = await fetchPublicUser(parseInt(req.params.id));
+    const dbResponse = await fetchPublicUser(parseInt(req.params.id), res.locals.userId);
     if (dbResponse.status) {
         res
             .status(200)
@@ -149,7 +149,7 @@ data.get("/api/data/user/:id", async (req, res) => {
     }
     return;
 });
-data.get("/api/data/user/:id/followers", checkQueries_MW(["endDate", "page"]), async (req, res) => {
+data.get("/api/data/user/:id/followers", validateJWTPassThrough_MW, checkQueries_MW(["endDate", "page"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -160,7 +160,7 @@ data.get("/api/data/user/:id/followers", checkQueries_MW(["endDate", "page"]), a
         queries.endDate +
         " page: " +
         queries.page);
-    const dbResponse = await fetchUserFollowers(parseInt(req.params.id), queries.endDate, queries.page);
+    const dbResponse = await fetchUserFollowers(parseInt(req.params.id), queries.endDate, queries.page, res.locals.userId);
     if (dbResponse.status) {
         res
             .status(200)
@@ -181,7 +181,7 @@ data.get("/api/data/user/:id/followers", checkQueries_MW(["endDate", "page"]), a
     }
     return;
 });
-data.get("/api/data/user/:id/followings", checkQueries_MW(["endDate", "page"]), async (req, res) => {
+data.get("/api/data/user/:id/followings", validateJWTPassThrough_MW, checkQueries_MW(["endDate", "page"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -192,7 +192,7 @@ data.get("/api/data/user/:id/followings", checkQueries_MW(["endDate", "page"]), 
         queries.endDate +
         " page: " +
         queries.page);
-    const dbResponse = await fetchUserFollowings(parseInt(req.params.id), queries.endDate, queries.page);
+    const dbResponse = await fetchUserFollowings(parseInt(req.params.id), queries.endDate, queries.page, res.locals.userId);
     if (dbResponse.status) {
         res
             .status(200)
@@ -213,7 +213,7 @@ data.get("/api/data/user/:id/followings", checkQueries_MW(["endDate", "page"]), 
     }
     return;
 });
-data.get("/api/data/user/:id/posts", checkQueries_MW(["endDate", "page"]), async (req, res) => {
+data.get("/api/data/user/:id/posts", validateJWTPassThrough_MW, checkQueries_MW(["endDate", "page"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -224,7 +224,7 @@ data.get("/api/data/user/:id/posts", checkQueries_MW(["endDate", "page"]), async
         queries.endDate +
         " page: " +
         queries.page);
-    const dbResponse = await fetchUserPosts(parseInt(req.params.id), queries.endDate, queries.page);
+    const dbResponse = await fetchUserPosts(parseInt(req.params.id), queries.endDate, queries.page, res.locals.userId);
     if (dbResponse.status) {
         res
             .status(200)
@@ -245,7 +245,7 @@ data.get("/api/data/user/:id/posts", checkQueries_MW(["endDate", "page"]), async
     }
     return;
 });
-data.get("/api/data/user/:id/likes", checkQueries_MW(["endDate", "page"]), async (req, res) => {
+data.get("/api/data/user/:id/likes", validateJWTPassThrough_MW, checkQueries_MW(["endDate", "page"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -256,7 +256,7 @@ data.get("/api/data/user/:id/likes", checkQueries_MW(["endDate", "page"]), async
         queries.endDate +
         " page: " +
         queries.page);
-    const dbResponse = await fetchUserLikes(parseInt(req.params.id), queries.endDate, queries.page);
+    const dbResponse = await fetchUserLikes(parseInt(req.params.id), queries.endDate, queries.page, res.locals.userId);
     if (dbResponse.status) {
         res
             .status(200)
@@ -341,8 +341,8 @@ data.get("/api/data/post/:id/comments", checkQueries_MW(["endDate", "page"]), as
     }
     return;
 });
-data.get("/api/data/post/:id", async (req, res) => {
-    const dbResponse = await fetchPost(parseInt(req.params.id));
+data.get("/api/data/post/:id", validateJWTPassThrough_MW, async (req, res) => {
+    const dbResponse = await fetchPost(res.locals.userId, parseInt(req.params.id));
     console.log("Post requested, requested id: " + req.params.id);
     if (dbResponse.status) {
         res

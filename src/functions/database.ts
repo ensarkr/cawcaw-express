@@ -15,10 +15,15 @@ import {
   convertDatabasePostToNormal,
   convertDatabasePostsToNormal,
   convertDatabaseUserToNormal,
+  convertDatabaseUsersToNormal,
   convertDatabaseUsersToPartial,
   convertDateToDatabase,
 } from "./conversion.js";
-import { getCommentsResponse, getPostsResponse } from "../typings/http.js";
+import {
+  createPostResponseBody,
+  getCommentsResponse,
+  getPostsResponse,
+} from "../typings/http.js";
 
 const logDatabaseError = true;
 
@@ -167,13 +172,15 @@ async function unfollowUser(
 async function createPost(
   userId: number,
   text: string,
-  imageUrl: string | null
-): Promise<doubleReturn<undefined>> {
+  imageUrl: string | null,
+  aspectRatio: number | null
+): Promise<createPostResponseBody> {
   try {
-    await sql`INSERT INTO cawcaw_posts (user_id, text, image_url)
-     VALUES (${userId}, ${text}, ${imageUrl})`;
+    const res =
+      await sql`INSERT INTO cawcaw_posts (user_id, text, image_url, aspect_ratio)
+     VALUES (${userId}, ${text}, ${imageUrl},${aspectRatio}) RETURNING id`;
 
-    return { status: true };
+    return { status: true, value: { postId: res.rows[0].id } };
   } catch (e) {
     if (logDatabaseError) console.log(e);
     return {
@@ -235,8 +242,15 @@ async function unlikePost(
   postId: number
 ): Promise<doubleReturn<undefined>> {
   try {
-    await sql`DELETE FROM cawcaw_post_likes WHERE user_id = ${userId} AND post_id = ${postId}`;
+    const res =
+      await sql`DELETE FROM cawcaw_post_likes WHERE user_id = ${userId} AND post_id = ${postId}
+      RETURNING id;`;
 
+    if (res.rowCount === 0)
+      return {
+        status: false,
+        message: "Already unliked.",
+      };
     return { status: true };
   } catch (e) {
     if (logDatabaseError) console.log(e);
@@ -254,7 +268,7 @@ async function commentOnPost(
 ): Promise<doubleReturn<undefined>> {
   try {
     await sql`INSERT INTO cawcaw_post_comments (user_id, post_id, comment)
-     VALUES (${userId}, ${postId}, ${comment});`;
+     VALUES (${userId}, ${postId}, ${comment}) `;
 
     return { status: true };
   } catch (e) {
@@ -270,11 +284,21 @@ const rowPerPage = 10;
 
 async function getLatestPosts(
   date: Date,
-  page: number
+  page: number,
+  userId: number | undefined
 ): Promise<getPostsResponse> {
   try {
-    let dbResponse = await sql`SELECT COUNT(*) as count FROM cawcaw_posts 
-      WHERE inserted_at < ${convertDateToDatabase(date)}`;
+    let dbResponse =
+      userId !== undefined
+        ? await sql`SELECT COUNT(*) as count 
+      FROM cawcaw_posts as posts 
+      LEFT JOIN (SELECT * FROM cawcaw_users) as users on posts.user_id = users.id
+      LEFT JOIN (SELECT * FROM cawcaw_post_likes WHERE user_id = ${userId} ) as likes on posts.id = likes.post_id 
+      WHERE posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp`
+        : await sql`SELECT COUNT(*) as count
+      FROM cawcaw_posts as posts 
+      LEFT JOIN (SELECT * FROM cawcaw_users) as users on posts.user_id = users.id
+      WHERE posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp`;
 
     const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
 
@@ -282,9 +306,21 @@ async function getLatestPosts(
       return { status: false, message: "Page does not exist." };
     }
 
-    dbResponse = await sql`SELECT * FROM cawcaw_posts 
-      WHERE inserted_at < ${convertDateToDatabase(date)} 
-      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+    dbResponse =
+      userId !== undefined
+        ? await sql`SELECT posts.* , users.username, users.display_name ,likes.id IS NOT NULL requested_liked  
+    FROM cawcaw_posts as posts 
+    LEFT JOIN (SELECT * FROM cawcaw_users) as users on posts.user_id = users.id
+    LEFT JOIN (SELECT * FROM cawcaw_post_likes WHERE user_id = ${userId} ) as likes on posts.id = likes.post_id 
+    WHERE posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+    ORDER BY posts.inserted_at DESC
+    LIMIT ${rowPerPage} OFFSET ${rowPerPage * page}`
+        : await sql`SELECT posts.* , users.username, users.display_name 
+    FROM cawcaw_posts as posts 
+    LEFT JOIN (SELECT * FROM cawcaw_users) as users on posts.user_id = users.id
+    WHERE posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+    ORDER BY posts.inserted_at DESC
+    LIMIT ${rowPerPage} OFFSET ${rowPerPage * page}`;
 
     return {
       status: true,
@@ -308,10 +344,12 @@ async function getFollowingPosts(
   page: number
 ): Promise<getPostsResponse> {
   try {
-    let dbResponse = await sql`SELECT COUNT(*) as count FROM cawcaw_posts JOIN
-    (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId}) 
-    as following_table on cawcaw_posts.user_id = following_table.follows_id 
-    WHERE cawcaw_posts.inserted_at < ${convertDateToDatabase(date)}`;
+    let dbResponse = await sql`SELECT COUNT(*) count FROM cawcaw_posts posts 
+    JOIN (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId}) follow on posts.user_id = follow.follows_id 
+    JOIN (SELECT id,username, display_name FROM cawcaw_users) users on posts.user_id = users.id
+    LEFT JOIN (SELECT * FROM cawcaw_post_likes WHERE user_id = ${userId}) likes on posts.id = likes.post_id 
+    WHERE posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+    `;
 
     const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
 
@@ -320,13 +358,13 @@ async function getFollowingPosts(
     }
 
     dbResponse =
-      await sql`SELECT cawcaw_posts.id,cawcaw_posts.user_id,cawcaw_posts.text,
-    cawcaw_posts.image_url,cawcaw_posts.likes_count,cawcaw_posts.comments_count 
-    as count FROM cawcaw_posts JOIN
-    (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId}) 
-    as following_table on cawcaw_posts.user_id = following_table.follows_id 
-    WHERE cawcaw_posts.inserted_at < ${convertDateToDatabase(date)}
-    LIMIT ${10} OFFSET ${rowPerPage * page}`;
+      await sql`SELECT posts.*, users.username, users.display_name , likes IS NOT NULL requested_liked FROM cawcaw_posts posts 
+    JOIN (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId}) follow on posts.user_id = follow.follows_id 
+    JOIN (SELECT id,username, display_name FROM cawcaw_users) users on posts.user_id = users.id
+    LEFT JOIN (SELECT * FROM cawcaw_post_likes WHERE user_id = ${userId}) likes on posts.id = likes.post_id 
+    WHERE posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+    ORDER BY posts.inserted_at DESC
+    LIMIT ${rowPerPage} OFFSET ${rowPerPage * page}`;
 
     return {
       status: true,
@@ -343,6 +381,49 @@ async function getFollowingPosts(
     };
   }
 }
+// async function getFollowingPosts(
+//   userId: number,
+//   date: Date,
+//   page: number
+// ): Promise<getPostsResponse> {
+//   try {
+//     let dbResponse = await sql`SELECT COUNT(*) as count FROM cawcaw_posts JOIN
+//     (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId})
+//     as following_table on cawcaw_posts.user_id = following_table.follows_id
+//     WHERE cawcaw_posts.inserted_at <= ${convertDateToDatabase(
+//       date
+//     )}::timestamp`;
+
+//     const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
+
+//     if (page > pageCount - 1) {
+//       return { status: false, message: "Page does not exist." };
+//     }
+
+//     dbResponse =
+//       await sql`SELECT cawcaw_posts.id,cawcaw_posts.user_id,cawcaw_posts.text,
+//     cawcaw_posts.image_url,cawcaw_posts.likes_count,cawcaw_posts.comments_count
+//     as count FROM cawcaw_posts JOIN
+//     (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId})
+//     as following_table on cawcaw_posts.user_id = following_table.follows_id
+//     WHERE cawcaw_posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+//     LIMIT ${10} OFFSET ${rowPerPage * page}`;
+
+//     return {
+//       status: true,
+//       value: {
+//         posts: convertDatabasePostsToNormal(dbResponse.rows as post_DB[]),
+//         pageCount,
+//       },
+//     };
+//   } catch (e) {
+//     if (logDatabaseError) console.log(e);
+//     return {
+//       status: false,
+//       message: "Database error occurred.",
+//     };
+//   }
+// }
 
 async function searchPosts(
   searchQuery: string,
@@ -352,7 +433,7 @@ async function searchPosts(
   try {
     let dbResponse = await sql`SELECT COUNT(*) as count FROM cawcaw_posts 
       WHERE search @@ websearch_to_tsquery(${searchQuery})
-      AND inserted_at < ${convertDateToDatabase(date)}`;
+      AND inserted_at <= ${convertDateToDatabase(date)}::timestamp`;
 
     const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
 
@@ -362,7 +443,7 @@ async function searchPosts(
 
     dbResponse = await sql`SELECT * FROM cawcaw_posts 
       WHERE search @@ websearch_to_tsquery(${searchQuery})
-      AND inserted_at < ${convertDateToDatabase(date)}
+      AND inserted_at <= ${convertDateToDatabase(date)}::timestamp
       LIMIT ${10} OFFSET ${rowPerPage * page}`;
 
     return {
@@ -394,7 +475,7 @@ async function searchUsers(
   try {
     let dbResponse = await sql`SELECT COUNT(*) as count FROM cawcaw_users 
       WHERE search @@ websearch_to_tsquery(${searchQuery})
-      AND inserted_at < ${convertDateToDatabase(date)}`;
+      AND inserted_at <= ${convertDateToDatabase(date)}::timestamp`;
 
     const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
 
@@ -404,7 +485,7 @@ async function searchUsers(
 
     dbResponse = await sql`SELECT * FROM cawcaw_users  
       WHERE search @@ websearch_to_tsquery(${searchQuery})
-      AND inserted_at < ${convertDateToDatabase(date)}
+      AND inserted_at <= ${convertDateToDatabase(date)}::timestamp
       LIMIT ${10} OFFSET ${rowPerPage * page}`;
 
     return {
@@ -423,10 +504,19 @@ async function searchUsers(
   }
 }
 
-async function fetchPublicUser(userId: number): Promise<doubleReturn<user>> {
+async function fetchPublicUser(
+  userId: number,
+  requesterUserId: number | undefined
+): Promise<doubleReturn<user>> {
   try {
     const dbResponse =
-      await sql`SELECT * FROM cawcaw_users WHERE id = ${userId}`;
+      requesterUserId !== undefined
+        ? await sql`SELECT single_user.*, follow IS NOT NULL requested_follows FROM 
+        (SELECT * FROM cawcaw_users WHERE id = ${userId}) single_user 
+        LEFT JOIN (SELECT * FROM cawcaw_follow_relation 
+        WHERE ${requesterUserId} = user_id AND ${userId} = follows_id) follow 
+        ON single_user.id = follow.follows_id`
+        : await sql`SELECT * FROM cawcaw_users WHERE id = ${userId}`;
 
     if (dbResponse.rowCount === 0)
       return { status: false, message: "User not found." };
@@ -446,10 +536,11 @@ async function fetchPublicUser(userId: number): Promise<doubleReturn<user>> {
 async function fetchUserFollowers(
   userId: number,
   date: Date,
-  page: number
+  page: number,
+  requestedUserId: number | undefined
 ): Promise<
   doubleReturn<{
-    users: userPartial[];
+    users: user[];
     pageCount: number;
   }>
 > {
@@ -465,16 +556,32 @@ async function fetchUserFollowers(
     }
 
     dbResponse =
-      await sql`SELECT cawcaw_users.id, cawcaw_users.display_name, cawcaw_users.username FROM cawcaw_users 
-    JOIN (SELECT * FROM cawcaw_follow_relation WHERE follows_id = ${userId}) as followers_table
-    ON cawcaw_users.id = followers_table.follows_id
-      WHERE followers_table.inserted_at < ${convertDateToDatabase(date)}
-      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+      requestedUserId !== undefined
+        ? await sql`SELECT cawcaw_users.*, 
+        (EXISTS (SELECT * FROM cawcaw_follow_relation WHERE user_id = ${requestedUserId} 
+        AND follows_id = cawcaw_users.id)) requested_follows  
+        FROM cawcaw_users 
+        JOIN (SELECT * FROM cawcaw_follow_relation WHERE follows_id = ${userId}) as followers_table
+        ON cawcaw_users.id = followers_table.user_id
+        WHERE followers_table.inserted_at <= ${convertDateToDatabase(
+          date
+        )}::timestamp
+        ORDER BY followers_table.inserted_at DESC
+        LIMIT ${10} OFFSET ${rowPerPage * page}`
+        : await sql`SELECT cawcaw_users.*
+        FROM cawcaw_users 
+        JOIN (SELECT * FROM cawcaw_follow_relation WHERE follows_id = ${userId}) as followers_table
+        ON cawcaw_users.id = followers_table.user_id
+        WHERE followers_table.inserted_at <= ${convertDateToDatabase(
+          date
+        )}::timestamp
+        ORDER BY followers_table.inserted_at DESC
+        LIMIT ${10} OFFSET ${rowPerPage * page}`;
 
     return {
       status: true,
       value: {
-        users: convertDatabaseUsersToPartial(dbResponse.rows as user_DB[]),
+        users: convertDatabaseUsersToNormal(dbResponse.rows as user_DB[]),
         pageCount,
       },
     };
@@ -490,10 +597,11 @@ async function fetchUserFollowers(
 async function fetchUserFollowings(
   userId: number,
   date: Date,
-  page: number
+  page: number,
+  requestedUserId: number | undefined
 ): Promise<
   doubleReturn<{
-    users: userPartial[];
+    users: user[];
     pageCount: number;
   }>
 > {
@@ -509,16 +617,32 @@ async function fetchUserFollowings(
     }
 
     dbResponse =
-      await sql`SELECT cawcaw_users.id, cawcaw_users.display_name, cawcaw_users.username FROM cawcaw_users 
-    JOIN (SELECT * FROM cawcaw_follow_relation WHERE user_id = ${userId}) as followers_table
-    ON cawcaw_users.id = followers_table.follows_id
-      WHERE followers_table.inserted_at < ${convertDateToDatabase(date)}
-      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+      requestedUserId !== undefined
+        ? await sql`SELECT cawcaw_users.*, 
+        (EXISTS (SELECT * FROM cawcaw_follow_relation WHERE user_id = ${requestedUserId} 
+        AND follows_id = cawcaw_users.id)) requested_follows  
+        FROM cawcaw_users 
+        JOIN (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId}) as followings_table
+        ON cawcaw_users.id = followings_table.follows_id
+        WHERE followings_table.inserted_at <= ${convertDateToDatabase(
+          date
+        )}::timestamp
+        ORDER BY followings_table.inserted_at DESC
+        LIMIT ${10} OFFSET ${rowPerPage * page}`
+        : await sql`SELECT cawcaw_users.*
+        FROM cawcaw_users 
+        JOIN (SELECT * FROM cawcaw_follow_relation WHERE cawcaw_follow_relation.user_id = ${userId}) as followings_table
+        ON cawcaw_users.id = followings_table.follows_id
+        WHERE followings_table.inserted_at <= ${convertDateToDatabase(
+          date
+        )}::timestamp
+        ORDER BY followings_table.inserted_at DESC
+        LIMIT ${10} OFFSET ${rowPerPage * page}`;
 
     return {
       status: true,
       value: {
-        users: convertDatabaseUsersToPartial(dbResponse.rows as user_DB[]),
+        users: convertDatabaseUsersToNormal(dbResponse.rows as user_DB[]),
         pageCount,
       },
     };
@@ -534,7 +658,8 @@ async function fetchUserFollowings(
 async function fetchUserPosts(
   userId: number,
   date: Date,
-  page: number
+  page: number,
+  requesterUserId: number | undefined
 ): Promise<getPostsResponse> {
   try {
     let dbResponse = await sql`SELECT COUNT(*) as count FROM cawcaw_posts 
@@ -548,10 +673,23 @@ async function fetchUserPosts(
       return { status: false, message: "Page does not exist." };
     }
 
-    dbResponse = await sql`SELECT * FROM cawcaw_posts 
-      WHERE user_id = ${userId}  
-      AND  inserted_at < ${convertDateToDatabase(date)} 
-      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+    dbResponse =
+      requesterUserId !== undefined
+        ? await sql`SELECT posts.* , users.username, users.display_name ,likes.id IS NOT NULL requested_liked  
+      FROM cawcaw_posts as posts 
+      LEFT JOIN (SELECT * FROM cawcaw_users) as users on posts.user_id = users.id
+      LEFT JOIN (SELECT * FROM cawcaw_post_likes WHERE user_id = ${requesterUserId} ) as likes on posts.id = likes.post_id 
+      WHERE posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp 
+      AND posts.user_id = ${userId}
+      ORDER BY posts.inserted_at DESC
+      LIMIT ${rowPerPage} OFFSET ${rowPerPage * page}`
+        : await sql`SELECT posts.* , users.username, users.display_name 
+      FROM cawcaw_posts as posts 
+      LEFT JOIN (SELECT * FROM cawcaw_users) as users on posts.user_id = users.id
+      WHERE posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+      AND posts.user_id = ${userId}
+      ORDER BY posts.inserted_at DESC
+      LIMIT ${rowPerPage} OFFSET ${rowPerPage * page}`;
 
     return {
       status: true,
@@ -587,9 +725,14 @@ async function fetchUserComments(
       return { status: false, message: "Page does not exist." };
     }
 
-    dbResponse = await sql`SELECT * FROM cawcaw_post_comments 
+    dbResponse =
+      await sql`SELECT cawcaw_post_comments.*, cawcaw_users.username, cawcaw_users.display_name FROM cawcaw_post_comments 
+      LEFT JOIN cawcaw_users ON cawcaw_users.id = cawcaw_post_comments.user_id 
       WHERE user_id = ${userId}  
-      AND inserted_at < ${convertDateToDatabase(date)} 
+      AND cawcaw_post_comments.inserted_at <= ${convertDateToDatabase(
+        date
+      )}::timestamp 
+      ORDER BY cawcaw_post_comments.inserted_at DESC
       LIMIT ${10} OFFSET ${rowPerPage * page}`;
 
     return {
@@ -613,14 +756,13 @@ async function fetchUserComments(
 async function fetchUserLikes(
   userId: number,
   date: Date,
-  page: number
+  page: number,
+  requesterUserId: number | undefined
 ): Promise<getPostsResponse> {
   try {
-    let dbResponse = await sql`SELECT COUNT(*) as count 
-      FROM cawcaw_post_likes JOIN cawcaw_posts
-      ON cawcaw_post_likes.post_id = cawcaw_posts.id
-      WHERE cawcaw_post_likes.user_id = ${userId}  
-      AND inserted_at < ${convertDateToDatabase(date)}`;
+    let dbResponse = await sql`SELECT COUNT(*) count FROM cawcaw_posts 
+      WHERE id IN (SELECT post_id FROM cawcaw_post_likes WHERE user_id = ${userId})  
+      AND inserted_at <= ${convertDateToDatabase(date)}::timestamp`;
 
     const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
 
@@ -628,19 +770,21 @@ async function fetchUserLikes(
       return { status: false, message: "Page does not exist." };
     }
 
-    dbResponse = await sql`SELECT 
-      cawcaw_posts.id,
-      cawcaw_posts.user_id,
-      cawcaw_posts.text,
-      cawcaw_posts.image_url,
-      cawcaw_posts.likes_count,
-      cawcaw_posts.comments_count,
-      cawcaw_posts.inserted_at
-      FROM cawcaw_post_likes JOIN cawcaw_posts 
-      ON cawcaw_post_likes.post_id = cawcaw_posts.id
-      WHERE cawcaw_post_likes.user_id = ${userId}  
-      AND inserted_at < ${convertDateToDatabase(date)} 
-      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+    dbResponse =
+      requesterUserId !== undefined
+        ? await sql`SELECT posts.* , users.username, users.display_name ,likes.id IS NOT NULL requested_liked  
+      FROM (SELECT * FROM cawcaw_posts WHERE id IN (SELECT post_id FROM cawcaw_post_likes WHERE user_id = ${userId})) as posts 
+      LEFT JOIN (SELECT * FROM cawcaw_users) as users on posts.user_id = users.id
+      LEFT JOIN (SELECT * FROM cawcaw_post_likes WHERE user_id = ${requesterUserId} ) as likes on posts.id = likes.post_id 
+      WHERE posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp 
+      ORDER BY posts.inserted_at DESC
+      LIMIT ${rowPerPage} OFFSET ${rowPerPage * page}`
+        : await sql`SELECT posts.* , users.username, users.display_name 
+      FROM (SELECT * FROM cawcaw_posts WHERE id IN (SELECT post_id FROM cawcaw_post_likes WHERE user_id = ${userId})) as posts 
+      LEFT JOIN (SELECT * FROM cawcaw_users) as users on posts.user_id = users.id
+      WHERE posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp 
+      ORDER BY posts.inserted_at DESC
+      LIMIT ${rowPerPage} OFFSET ${rowPerPage * page}`;
 
     return {
       status: true,
@@ -664,10 +808,10 @@ async function fetchPostComments(
   page: number
 ): Promise<getCommentsResponse> {
   try {
-    let dbResponse = await sql`SELECT COUNT(*) as count 
-      FROM cawcaw_post_comments 
-      WHERE post_id = ${postId}  
-      AND inserted_at < ${convertDateToDatabase(date)}`;
+    let dbResponse = await sql`SELECT COUNT(*) as count FROM 
+      (SELECT * FROM cawcaw_post_comments WHERE post_id = ${postId}) comments 
+    JOIN (SELECT id,display_name,username FROM cawcaw_users) users on users.id = comments.user_id 
+    WHERE inserted_at <= ${convertDateToDatabase(date)}::timestamp`;
 
     const pageCount = Math.ceil(dbResponse.rows[0].count / rowPerPage);
 
@@ -675,10 +819,13 @@ async function fetchPostComments(
       return { status: false, message: "Page does not exist." };
     }
 
-    dbResponse = await sql`SELECT *  FROM cawcaw_post_comments 
-      WHERE post_id = ${postId}   
-      AND inserted_at < ${convertDateToDatabase(date)} 
-      LIMIT ${10} OFFSET ${rowPerPage * page}`;
+    dbResponse =
+      await sql`SELECT comments.*, users.display_name, users.username FROM 
+    (SELECT * FROM cawcaw_post_comments WHERE post_id = ${postId}) comments 
+    JOIN (SELECT id,display_name,username FROM cawcaw_users) users on users.id = comments.user_id 
+    WHERE inserted_at <= ${convertDateToDatabase(date)}::timestamp 
+    ORDER BY comments.inserted_at DESC
+    LIMIT ${rowPerPage} OFFSET ${rowPerPage * page}`;
 
     return {
       status: true,
@@ -698,17 +845,30 @@ async function fetchPostComments(
   }
 }
 
-async function fetchPost(postId: number): Promise<doubleReturn<post>> {
+async function fetchPost(
+  userId: number | undefined,
+  postId: number
+): Promise<doubleReturn<post>> {
   try {
     const dbResponse =
-      await sql`SELECT * FROM cawcaw_users WHERE id = ${postId}`;
+      userId !== undefined
+        ? await sql`SELECT posts.* , users.username, users.display_name, likes.id IS NOT NULL requested_liked 
+      FROM (SELECT * FROM cawcaw_posts posts WHERE id = ${postId}) posts 
+      JOIN (SELECT id,username, display_name FROM cawcaw_users) users on users.id = posts.user_id
+      LEFT JOIN (SELECT * FROM cawcaw_post_likes WHERE user_id = ${userId}) likes on likes.post_id = posts.id`
+        : await sql`SELECT posts.* , users.username, users.display_name
+      FROM (SELECT * FROM cawcaw_posts posts WHERE id = ${postId}) posts 
+      JOIN (SELECT id,username, display_name FROM cawcaw_users) users on users.id = posts.user_id`;
 
     if (dbResponse.rowCount === 0)
       return { status: false, message: "Post not found." };
 
     const post = dbResponse.rows[0] as post_DB;
 
-    return { status: true, value: convertDatabasePostToNormal(post) };
+    return {
+      status: true,
+      value: convertDatabasePostToNormal(post),
+    } as unknown as Promise<doubleReturn<post>>;
   } catch (e) {
     if (logDatabaseError) console.log(e);
     return {

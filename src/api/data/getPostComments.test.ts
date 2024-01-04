@@ -59,10 +59,14 @@ describe("get post comments ", () => {
 
     expect(body.status).toBe(true);
 
-    if (!body.status) return false;
-
+    if (!body.status) {
+      throw "Status is wrong";
+    }
+    
     expect(body.value.pageCount).toBe(1);
     expect(body.value.comments).toHaveLength(5);
+    expect(typeof body.value.comments[0].displayName).toBe("string");
+    expect(typeof body.value.comments[0].username).toBe("string");
   });
 
   test("route responds correct non-existent page", async () => {

@@ -171,23 +171,36 @@ describe("create post", () => {
 
     expect(response.status).toEqual(200);
 
+    const data: createPostResponseBody = await response.json();
     const posts = await getPostsOfTestUser();
 
+    if (!data.status) {
+      throw "Status is wrong";
+    }
+
+    expect(data.value.postId).toEqual(posts[0].id);
     expect(posts[0].text).toBe(requestBody.text);
     expect(posts[0].image_url).toBeNull();
   });
 
-  test("post is added to database and image_url accessible", async () => {
+  test("post is added to database and image_url, aspect_ratio accessible", async () => {
     const response = await fetch(mainUrl, {
       ...requestOptions,
     });
 
     expect(response.status).toEqual(200);
 
+    const data: createPostResponseBody = await response.json();
     const posts = await getPostsOfTestUser();
 
+    if (!data.status) {
+      throw "Status is wrong";
+    }
+
+    expect(data.value.postId).toEqual(posts[1].id);
     expect(posts[1].text).toBe(requestBody.text);
     expect(posts[1].image_url !== null).toBe(true);
+    expect(posts[1].aspect_ratio).toBe(1.6);
     console.log("image link", posts[1].image_url);
   }, 10000);
 });

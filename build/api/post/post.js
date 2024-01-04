@@ -49,6 +49,7 @@ post.post("/api/post/create", validateJWT_MW, upload.single("image"), async (req
         return;
     }
     let fileUrl = null;
+    let aspectRatio = null;
     if (req.file) {
         if (!["image/webp", "image/png", "image/jpeg"].includes(req.file.mimetype)) {
             res
@@ -72,10 +73,11 @@ post.post("/api/post/create", validateJWT_MW, upload.single("image"), async (req
         }
         const webpBuffer = await sharp(req.file?.buffer)
             .webp({ quality: 100 })
-            .toBuffer();
+            .toBuffer({ resolveWithObject: true });
+        aspectRatio = webpBuffer.info.width / webpBuffer.info.height;
         const dataStream = new Readable();
         dataStream._read = () => { };
-        dataStream.push(webpBuffer);
+        dataStream.push(webpBuffer.data);
         dataStream.push(null);
         const uploadResult = await new Promise((resolve) => {
             dataStream.pipe(cloudinary.uploader.upload_stream((error, uploadResult) => {
@@ -103,9 +105,12 @@ post.post("/api/post/create", validateJWT_MW, upload.single("image"), async (req
             return;
         }
     }
-    const dbResponse = await createPost(res.locals.userId, body.text, fileUrl);
+    const dbResponse = await createPost(res.locals.userId, body.text, fileUrl, aspectRatio);
     if (dbResponse.status) {
-        res.status(200).end();
+        res
+            .status(200)
+            .json(dbResponse)
+            .end();
         return;
     }
     else {

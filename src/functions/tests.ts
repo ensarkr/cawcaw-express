@@ -231,6 +231,11 @@ async function addTestFollowRelation() {
   (${testUserData.id} , ${secondTestUser.id})`;
 }
 
+async function addTestFollowItself() {
+  await sql`INSERT INTO cawcaw_follow_relation (user_id,follows_id) VALUES 
+  (${testUserData.id} , ${testUserData.id})`;
+}
+
 async function getPostsOfTestUser(): Promise<post_DB[]> {
   return (
     await sql`SELECT * FROM cawcaw_posts WHERE user_id = ${testUserData.id}`
@@ -319,4 +324,5 @@ export {
   insertCommentsByTestUser,
   addLikeByTestUser,
   deleteTestUserByUsername,
+  addTestFollowItself,
 };

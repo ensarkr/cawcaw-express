@@ -1,13 +1,17 @@
 import "dotenv/config";
 import { getPageQuery, getPostsResponse } from "../../typings/http";
 import {
+  addLikeByTestUser,
   deleteTestUsers,
+  insertPostByTestUser,
   insertPostsByTestUser,
   insertTestUser,
   testHost,
+  testUserData,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
 import { checkQueries_TEST } from "../../functions/globalTests";
+import { createJWT } from "../../functions/jwt";
 
 const mainUrl = testHost + "/data/posts/explore";
 
@@ -20,11 +24,20 @@ const requestUrl = returnURLWithQueries(mainUrl, requestQuery);
 
 const requestOptions: RequestInit = {
   method: "GET",
+  headers: {
+    authorization: createJWT({
+      id: testUserData.id,
+      username: testUserData.username,
+      displayName: testUserData.displayName,
+    }),
+  },
 };
 
 describe("get explore posts", () => {
   beforeAll(async () => {
     await insertTestUser();
+    await insertPostByTestUser();
+    await addLikeByTestUser();
     await insertPostsByTestUser(15);
   });
 
@@ -54,9 +67,13 @@ describe("get explore posts", () => {
 
     expect(body.status).toBe(true);
 
-    if (!body.status) return false;
+    if (!body.status) {
+      throw "Status is wrong";
+    }
 
     expect(body.value.posts).toHaveLength(10);
+    expect(typeof body.value.posts[0].username).toBe("string");
+    expect(typeof body.value.posts[0].requestedLiked).toBe("boolean");
     nonExistentPage = body.value.pageCount;
   });
 

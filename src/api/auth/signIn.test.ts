@@ -81,7 +81,9 @@ describe("sign in", () => {
 
     expect(response.status).toEqual(200);
 
-    if (!body.status) return false;
+       if (!body.status) {
+      throw "Status is wrong";
+    }
     expect(typeof body.value).toBe("string");
 
     const payload = decodeJWTPayload(body.value);

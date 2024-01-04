@@ -9,6 +9,7 @@ type user_DB = {
   followers_count: number;
   following_count: number;
   inserted_at: dbDate;
+  requested_follows?: boolean;
 };
 
 type user = {
@@ -18,6 +19,7 @@ type user = {
   description: string;
   followersCount: number;
   followingCount: number;
+  requestedFollows: boolean;
 };
 
 type userPartial = Pick<user, "id" | "username" | "displayName">;
@@ -33,11 +35,16 @@ type post_DB = {
   id: number;
   user_id: number;
   text: string;
-  image_url: string | null;
   likes_count: number;
   comments_count: number;
   inserted_at: dbDate;
-};
+  username: string;
+  display_name: string;
+  requested_liked?: boolean;
+} & (
+  | { image_url: null; aspect_ratio: null }
+  | { image_url: string; aspect_ratio: number }
+);
 
 type postLikes_DB = {
   id: number;
@@ -51,6 +58,8 @@ type postComment_DB = {
   post_id: number;
   comment: string;
   inserted_at: dbDate;
+  username: string;
+  display_name: string;
 };
 
 type postComment = {
@@ -59,17 +68,24 @@ type postComment = {
   postId: number;
   comment: string;
   insertedAt: Date;
+  username: string;
+  displayName: string;
 };
 
 type post = {
   id: number;
   userId: number;
   text: string;
-  imageUrl: string | null;
   likesCount: number;
   commentsCount: number;
   insertedAt: Date;
-};
+  username: string;
+  displayName: string;
+  requestedLiked: boolean;
+} & (
+  | { imageUrl: null; aspectRatio: null }
+  | { imageUrl: string; aspectRatio: number }
+);
 
 export {
   user_DB,
