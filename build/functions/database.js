@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
-import { convertDatabaseCommentsToNormal, convertDatabasePostToNormal, convertDatabasePostsToNormal, convertDatabaseUserToNormal, convertDatabaseUsersToNormal, convertDatabaseUsersToPartial, convertDateToDatabase, } from "./conversion.js";
+import { convertDatabaseCommentsToNormal, convertDatabasePostToNormal, convertDatabasePostsToNormal, convertDatabaseUserToNormal, convertDatabaseUsersToNormal, convertDateToDatabase, } from "./conversion.js";
 const logDatabaseError = true;
 async function createUser(displayName, username, password) {
     try {
@@ -321,7 +321,7 @@ async function getFollowingPosts(userId, date, page) {
 //     };
 //   }
 // }
-async function searchPosts(searchQuery, date, page) {
+async function searchPosts(searchQuery, date, page, requestedUserId) {
     try {
         let dbResponse = await sql `SELECT COUNT(*) as count FROM cawcaw_posts 
       WHERE search @@ websearch_to_tsquery(${searchQuery})
@@ -330,9 +330,22 @@ async function searchPosts(searchQuery, date, page) {
         if (page > pageCount - 1) {
             return { status: false, message: "Page does not exist." };
         }
-        dbResponse = await sql `SELECT * FROM cawcaw_posts 
-      WHERE search @@ websearch_to_tsquery(${searchQuery})
-      AND inserted_at <= ${convertDateToDatabase(date)}::timestamp
+        dbResponse =
+            requestedUserId !== undefined
+                ? await sql `SELECT posts.*, users.display_name, users.username, 
+      (EXISTS (SELECT * FROM cawcaw_post_likes likes WHERE likes.user_id = ${requestedUserId} AND likes.post_id = posts.id)) requested_liked
+      FROM cawcaw_posts posts
+      JOIN cawcaw_users users ON users.id = posts.user_id
+      WHERE posts.search @@ websearch_to_tsquery(${searchQuery})
+      AND posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+      ORDER BY posts.inserted_at DESC
+      LIMIT ${10} OFFSET ${rowPerPage * page}`
+                : await sql `SELECT posts.*, users.display_name, users.username
+      FROM cawcaw_posts posts
+      JOIN cawcaw_users users ON users.id = posts.user_id
+      WHERE posts.search @@ websearch_to_tsquery(${searchQuery})
+      AND posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+      ORDER BY posts.inserted_at DESC
       LIMIT ${10} OFFSET ${rowPerPage * page}`;
         return {
             status: true,
@@ -351,7 +364,7 @@ async function searchPosts(searchQuery, date, page) {
         };
     }
 }
-async function searchUsers(searchQuery, date, page) {
+async function searchUsers(searchQuery, date, page, requestedUserId) {
     try {
         let dbResponse = await sql `SELECT COUNT(*) as count FROM cawcaw_users 
       WHERE search @@ websearch_to_tsquery(${searchQuery})
@@ -360,14 +373,25 @@ async function searchUsers(searchQuery, date, page) {
         if (page > pageCount - 1) {
             return { status: false, message: "Page does not exist." };
         }
-        dbResponse = await sql `SELECT * FROM cawcaw_users  
-      WHERE search @@ websearch_to_tsquery(${searchQuery})
-      AND inserted_at <= ${convertDateToDatabase(date)}::timestamp
+        dbResponse =
+            requestedUserId !== undefined
+                ? await sql `SELECT users.*,  
+      (EXISTS (SELECT * FROM cawcaw_follow_relation follow WHERE follow.user_id = ${requestedUserId} AND follow.follows_id = users.id )) requested_follows
+      FROM cawcaw_users users
+      WHERE users.search @@ websearch_to_tsquery(${searchQuery})
+      AND users.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+      ORDER BY users.inserted_at DESC
+      LIMIT ${10} OFFSET ${rowPerPage * page}`
+                : await sql `SELECT *
+      FROM cawcaw_users users 
+      WHERE users.search @@ websearch_to_tsquery(${searchQuery})
+      AND users.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+      ORDER BY users.inserted_at DESC
       LIMIT ${10} OFFSET ${rowPerPage * page}`;
         return {
             status: true,
             value: {
-                users: convertDatabaseUsersToPartial(dbResponse.rows),
+                users: convertDatabaseUsersToNormal(dbResponse.rows),
                 pageCount,
             },
         };

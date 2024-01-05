@@ -68,6 +68,7 @@ describe("get searched users", () => {
           e.username.includes(requestQuery.searchQuery)
       ).length
     );
+    expect(body.value.users[0].requestedFollows).toBe(false);
   });
 
   test("route responds correct non-existent page", async () => {

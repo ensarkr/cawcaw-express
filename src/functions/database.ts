@@ -428,7 +428,8 @@ async function getFollowingPosts(
 async function searchPosts(
   searchQuery: string,
   date: Date,
-  page: number
+  page: number,
+  requestedUserId: number | undefined
 ): Promise<getPostsResponse> {
   try {
     let dbResponse = await sql`SELECT COUNT(*) as count FROM cawcaw_posts 
@@ -441,9 +442,22 @@ async function searchPosts(
       return { status: false, message: "Page does not exist." };
     }
 
-    dbResponse = await sql`SELECT * FROM cawcaw_posts 
-      WHERE search @@ websearch_to_tsquery(${searchQuery})
-      AND inserted_at <= ${convertDateToDatabase(date)}::timestamp
+    dbResponse =
+      requestedUserId !== undefined
+        ? await sql`SELECT posts.*, users.display_name, users.username, 
+      (EXISTS (SELECT * FROM cawcaw_post_likes likes WHERE likes.user_id = ${requestedUserId} AND likes.post_id = posts.id)) requested_liked
+      FROM cawcaw_posts posts
+      JOIN cawcaw_users users ON users.id = posts.user_id
+      WHERE posts.search @@ websearch_to_tsquery(${searchQuery})
+      AND posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+      ORDER BY posts.inserted_at DESC
+      LIMIT ${10} OFFSET ${rowPerPage * page}`
+        : await sql`SELECT posts.*, users.display_name, users.username
+      FROM cawcaw_posts posts
+      JOIN cawcaw_users users ON users.id = posts.user_id
+      WHERE posts.search @@ websearch_to_tsquery(${searchQuery})
+      AND posts.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+      ORDER BY posts.inserted_at DESC
       LIMIT ${10} OFFSET ${rowPerPage * page}`;
 
     return {
@@ -465,10 +479,11 @@ async function searchPosts(
 async function searchUsers(
   searchQuery: string,
   date: Date,
-  page: number
+  page: number,
+  requestedUserId: number | undefined
 ): Promise<
   doubleReturn<{
-    users: userPartial[];
+    users: user[];
     pageCount: number;
   }>
 > {
@@ -483,15 +498,26 @@ async function searchUsers(
       return { status: false, message: "Page does not exist." };
     }
 
-    dbResponse = await sql`SELECT * FROM cawcaw_users  
-      WHERE search @@ websearch_to_tsquery(${searchQuery})
-      AND inserted_at <= ${convertDateToDatabase(date)}::timestamp
+    dbResponse =
+      requestedUserId !== undefined
+        ? await sql`SELECT users.*,  
+      (EXISTS (SELECT * FROM cawcaw_follow_relation follow WHERE follow.user_id = ${requestedUserId} AND follow.follows_id = users.id )) requested_follows
+      FROM cawcaw_users users
+      WHERE users.search @@ websearch_to_tsquery(${searchQuery})
+      AND users.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+      ORDER BY users.inserted_at DESC
+      LIMIT ${10} OFFSET ${rowPerPage * page}`
+        : await sql`SELECT *
+      FROM cawcaw_users users 
+      WHERE users.search @@ websearch_to_tsquery(${searchQuery})
+      AND users.inserted_at <= ${convertDateToDatabase(date)}::timestamp
+      ORDER BY users.inserted_at DESC
       LIMIT ${10} OFFSET ${rowPerPage * page}`;
 
     return {
       status: true,
       value: {
-        users: convertDatabaseUsersToPartial(dbResponse.rows as user_DB[]),
+        users: convertDatabaseUsersToNormal(dbResponse.rows as user_DB[]),
         pageCount,
       },
     };

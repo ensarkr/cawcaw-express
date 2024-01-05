@@ -64,7 +64,7 @@ data.get("/api/data/posts/following", validateJWT_MW, checkQueries_MW(["endDate"
     }
     return;
 });
-data.get("/api/data/posts/search", checkQueries_MW(["endDate", "page", "searchQuery"]), async (req, res) => {
+data.get("/api/data/posts/search", validateJWTPassThrough_MW, checkQueries_MW(["endDate", "page", "searchQuery"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -74,7 +74,7 @@ data.get("/api/data/posts/search", checkQueries_MW(["endDate", "page", "searchQu
         queries.endDate +
         " page: " +
         queries.page);
-    const dbResponse = await searchPosts(queries.searchQuery, queries.endDate, queries.page);
+    const dbResponse = await searchPosts(queries.searchQuery, queries.endDate, queries.page, res.locals.userId);
     if (dbResponse.status) {
         res
             .status(200)
@@ -95,7 +95,7 @@ data.get("/api/data/posts/search", checkQueries_MW(["endDate", "page", "searchQu
     }
     return;
 });
-data.get("/api/data/users/search", checkQueries_MW(["endDate", "page", "searchQuery"]), async (req, res) => {
+data.get("/api/data/users/search", validateJWTPassThrough_MW, checkQueries_MW(["endDate", "page", "searchQuery"]), async (req, res) => {
     const queries = {
         page: parseInt(req.query.page),
         endDate: new Date(req.query.endDate),
@@ -105,7 +105,7 @@ data.get("/api/data/users/search", checkQueries_MW(["endDate", "page", "searchQu
         queries.endDate +
         " page: " +
         queries.page);
-    const dbResponse = await searchUsers(queries.searchQuery, queries.endDate, queries.page);
+    const dbResponse = await searchUsers(queries.searchQuery, queries.endDate, queries.page, res.locals.userId);
     if (dbResponse.status) {
         res
             .status(200)

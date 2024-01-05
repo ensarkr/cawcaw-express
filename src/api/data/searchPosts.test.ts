@@ -5,6 +5,7 @@ import {
   insertPrefilledPostsByTestUser,
   insertTestUser,
   testHost,
+  testUserData,
 } from "../../functions/tests";
 import { returnURLWithQueries } from "../../functions/conversion";
 import { checkQueries_TEST } from "../../functions/globalTests";
@@ -62,11 +63,12 @@ describe("get searched posts", () => {
     nonExistentPage = body.value.pageCount;
 
     expect(body.value.posts.length > 0).toBe(true);
-
     expect(body.value.posts).toHaveLength(
       body.value.posts.filter((e) => e.text.includes(requestQuery.searchQuery))
         .length
     );
+    expect(body.value.posts[0].username).toBe(testUserData.username);
+    expect(body.value.posts[0].requestedLiked).toBe(false);
   });
 
   test("route responds correct non-existent page", async () => {

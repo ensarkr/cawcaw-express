@@ -121,6 +121,7 @@ data.get(
 
 data.get(
   "/api/data/posts/search",
+  validateJWTPassThrough_MW,
   checkQueries_MW(["endDate", "page", "searchQuery"]),
   async (req, res) => {
     const queries: searchPostsQuery = {
@@ -139,7 +140,8 @@ data.get(
     const dbResponse = await searchPosts(
       queries.searchQuery,
       queries.endDate,
-      queries.page
+      queries.page,
+      res.locals.userId
     );
 
     if (dbResponse.status) {
@@ -165,6 +167,7 @@ data.get(
 
 data.get(
   "/api/data/users/search",
+  validateJWTPassThrough_MW,
   checkQueries_MW(["endDate", "page", "searchQuery"]),
   async (req, res) => {
     const queries: searchPostsQuery = {
@@ -183,7 +186,8 @@ data.get(
     const dbResponse = await searchUsers(
       queries.searchQuery,
       queries.endDate,
-      queries.page
+      queries.page,
+      res.locals.userId
     );
 
     if (dbResponse.status) {
