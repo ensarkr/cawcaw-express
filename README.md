@@ -15,7 +15,7 @@ Backend express server for my [react-native project](https://github.com/ensarkr/
 
 ## Routes
 
-jwt check (401 if not valid) = JC
+jwt check (401 if not valid) = JC,
 jwt check passthrough = JCP
 
 - action
@@ -56,6 +56,14 @@ jwt check passthrough = JCP
   - edit - edit profile (JC)
   - editPassword - edit password (JC)
 
+## Live Demo
+
+Vercel api url = https://cawcaw-express.vercel.app/api
+
+- Some examples
+  - [Get latest posts that posted before 06/01/2025](https://cawcaw-express.vercel.app/api/data/posts/explore?endDate=Sat%20Jan%2006%202025%2001%3A35%3A15%20GMT%2B0300%20(GMT%2B03%3A00)&page=0)
+  - [Search users that contains Alex](https://cawcaw-express.vercel.app/api/data/users/search?endDate=Sat%20Jan%2006%202025%2001%3A35%3A15%20GMT%2B0300%20(GMT%2B03%3A00)&searchQuery=Alex&page=0)
+
 ## To Run Locally
 
 ```
@@ -85,7 +93,7 @@ There are tests for all api endpoints.
 $ npm test
 
 <!-- to run specific tests -->
-$ npm test ./src/api/<route to the file>
+$ npm test ./src/api/<route to the test file>
 ```
 
 ## Technologies
