@@ -138,15 +138,6 @@ SET default_table_access_method = heap;
 
 
 --
--- TOC entry 2650 (class 0 OID 0)
--- Dependencies: 218
--- Name: bought_products_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
---
-
-ALTER SEQUENCE public.bought_products_id_seq OWNED BY public.bought_products.id;
-
-
---
 -- TOC entry 223 (class 1259 OID 73729)
 -- Name: cawcaw_follow_relation; Type: TABLE; Schema: public; Owner: default
 --
@@ -394,14 +385,6 @@ ALTER TABLE ONLY public.cawcaw_posts ALTER COLUMN id SET DEFAULT nextval('public
 --
 
 ALTER TABLE ONLY public.cawcaw_users ALTER COLUMN id SET DEFAULT nextval('public.cawcaw_users_id_seq'::regclass);
-
-
---
--- TOC entry 2432 (class 2604 OID 24589)
--- Name: users id; Type: DEFAULT; Schema: public; Owner: default
---
-
-ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
 
 
 --
